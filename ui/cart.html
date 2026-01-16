@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Cart</title>
+    <script src="js/api.js" defer></script>
+    <script src="js/ui.js" defer></script>
+</head>
+
+<body>
+    <div id="cart-container">
+        <div id="cart-items"></div>
+        <div id="cart-summary">
+            <input id="coupon-code" placeholder="Coupon code">
+            <button id="apply-coupon">Apply</button>
+            <div>Total: $<span id="cart-total">0</span></div>
+            <button id="checkout-btn">Checkout</button>
+        </div>
+    </div>
+
+    <script>
+        loadCart();
+
+        async function loadCart() {
+            const cartData = await cart.get();
+            renderCartItems(cartData.items);
+            updateCartTotal(cartData.total);
+
+            document.getElementById('apply-coupon').onclick = applyCoupon;
+            document.getElementById('checkout-btn').onclick = goToCheckout;
+        }
+    </script>
+</body>
+
+</html>

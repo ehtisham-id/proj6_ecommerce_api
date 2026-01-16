@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin</title>
+    <script src="js/api.js" defer></script>
+</head>
+
+<body>
+    <div id="admin-stats"></div>
+    <div id="revenue-chart"></div>
+    <div id="top-products"></div>
+
+    <script>
+        Promise.all([
+            admin.stats(),
+            admin.revenue(30),
+            admin.topProducts()
+        ]).then(([stats, revenue, topProducts]) => {
+            document.getElementById('admin-stats').innerHTML = `
+        <h1>Revenue: $${stats.totalRevenue}</h1>
+        <p>Orders: ${stats.totalOrders}</p>
+      `;
+        });
+    </script>
+</body>
+
+</html>

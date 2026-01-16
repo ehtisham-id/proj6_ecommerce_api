@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>E-Commerce</title>
+    <script src="js/api.js" defer></script>
+    <script src="js/ui.js" defer></script>
+</head>
+
+<body>
+    <nav>
+  <a href="index.html">Home</a>
+  <a href="cart.html">Cart</a>
+  <a href="orders.html">Orders</a>
+  <a href="profile.html">Profile</a>
+  <a href="seller.html">Seller</a>
+  <a href="admin.html">Admin</a>
+  <a href="login.html">Login</a>
+</nav>
+
+    <div id="loading">Loading...</div>
+
+    <section id="featured">
+        <h2>Featured Products</h2>
+        <div id="products-grid"></div>
+    </section>
+
+    <section id="categories">
+        <h2>Categories</h2>
+        <div id="categories-list"></div>
+    </section>
+
+    <script>
+        // Landing page logic
+        loadLandingPage();
+
+        async function loadLandingPage() {
+            try {
+                const [productsData, categoriesData] = await Promise.all([
+                    products.list({ page: 1, limit: 12, featured: true }),
+                    categories.list()
+                ]);
+
+                renderProducts(productsData.products, 'products-grid');
+                renderCategories(categoriesData, 'categories-list');
+            } catch (error) {
+                console.error('Load failed:', error);
+            }
+        }
+    </script>
+</body>
+
+</html>

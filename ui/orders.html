@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Orders</title>
+    <script src="js/api.js" defer></script>
+</head>
+
+<body>
+    <div id="orders-list"></div>
+    <div id="notifications"></div>
+
+    <script>
+        Promise.all([
+            orders.list(),
+            notifications.list()
+        ]).then(([ordersData, notifsData]) => {
+            renderOrders(ordersData.orders);
+            renderNotifications(notifsData.notifications);
+        });
+    </script>
+</body>
+
+</html>

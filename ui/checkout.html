@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Checkout</title>
+    <script src="js/api.js" defer></script>
+    <script src="js/ui.js" defer></script>
+</head>
+
+<body>
+    <div id="checkout-form">
+        <form id="order-form">
+            <input id="items" type="hidden">
+            <button type="submit">Place Order</button>
+        </form>
+        <div id="payment-section" style="display:none;">
+            <div id="payment-status"></div>
+        </div>
+    </div>
+
+    <script>
+        loadCheckout();
+
+        document.getElementById('order-form').onsubmit = handleCheckout;
+
+        async function handleCheckout(e) {
+            e.preventDefault();
+            const cart = await cart.get();
+
+            // 1. Create order
+            const order = await orders.create({ items: cart.items });
+
+            // 2. Create payment intent
+            const paymentIntent = await payments.intent({
+                orderId: order.id,
+                amount: order.totalAmount
+            });
+
+            // 3. Handle payment (mock)
+            setTimeout(() => {
+                payments.confirm({ paymentIntentId: paymentIntent.paymentIntent.id });
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>

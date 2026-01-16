@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Product Detail</title>
+    <script src="js/api.js" defer></script>
+    <script src="js/ui.js" defer></script>
+</head>
+
+<body>
+    <div id="product-detail">
+        <div id="product-info"></div>
+        <div id="reviews-section">
+            <h3>Reviews</h3>
+            <div id="reviews-list"></div>
+        </div>
+        <button id="add-to-cart">Add to Cart</button>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+
+        loadProductDetail(productId);
+
+        async function loadProductDetail(id) {
+            const [product, reviewsData, cart] = await Promise.all([
+                products.get(id),
+                reviews.product(id, { page: 1, limit: 5 }),
+                cart.get()
+            ]);
+
+            renderProduct(product);
+            renderReviews(reviewsData.reviews);
+
+            document.getElementById('add-to-cart').onclick = () => {
+                cart.add({ productId: id, quantity: 1 });
+            };
+        }
+    </script>
+</body>
+
+</html>
