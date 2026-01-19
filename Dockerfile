@@ -1,44 +1,22 @@
-# syntax=docker/dockerfile:1
+FROM node:18-alpine AS builder
 
-ARG NODE_VERSION=25.2.1
-
-####################
-# Build stage
-####################
-FROM node:${NODE_VERSION}-alpine AS builder
-
-WORKDIR /usr/src/app
-
-RUN npm install -g @nestjs/cli
-
-# Install dependencies (including dev deps for Nest build)
+WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --only=production && npm cache clean --force
 
-# Copy source
 COPY . .
-
-# Build NestJS app
 RUN npm run build
 
-####################
-# Production stage
-####################
-FROM node:${NODE_VERSION}-alpine
+FROM node:18-alpine AS runner
+WORKDIR /app
 
-WORKDIR /usr/src/app
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Copy only production dependencies
-COPY package*.json ./
-RUN npm ci --omit=dev
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
 
-# Copy built app from builder
-COPY --from=builder /usr/src/app/dist ./dist
-
-# Use non-root user
+EXPOSE 3000
 USER node
-
-EXPOSE 8080
-
-# Run NestJS app
-CMD ["node", "dist/main.js"]
+CMD ["npm", "run", "start:prod"]

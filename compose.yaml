@@ -1,4 +1,4 @@
-version: '3.9'
+version: '3.8'
 
 services:
   postgres:
@@ -39,9 +39,7 @@ services:
     container_name: ecommerce-app
     restart: unless-stopped
     ports:
-      - '8080:8080'
-    env_file:
-      - .env
+      - '3000:3000'
     environment:
       NODE_ENV: development
       DB_HOST: postgres
@@ -54,19 +52,8 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: node dist/main.js
+    command: npm run start:dev
 
 volumes:
   postgres_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/01DC385979EC0CF0/Projects/Docker_Data/postgres
-
   redis_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/01DC385979EC0CF0/Projects/Docker_Data/redis
