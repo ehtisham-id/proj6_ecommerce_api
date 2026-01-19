@@ -7,6 +7,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import * as bcrypt from 'bcryptjs';
 import { AuditLoggerService } from '@common/audit/audit-logger.service';
+import { Role } from '@common/types/role.type';
 
 @Injectable()
 export class UsersService {
@@ -85,7 +86,7 @@ export class UsersService {
   async updateRole(id: string, updateRoleDto: UpdateRoleDto, adminId: string): Promise<User> {
     const user = await this.findOne(id);
     
-    if (user.role === 'ADMIN' && adminId !== id) {
+    if (user.role === Role.ADMIN && adminId !== id) {
       throw new ForbiddenException('Cannot change admin role');
     }
 

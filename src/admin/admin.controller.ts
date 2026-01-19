@@ -16,10 +16,11 @@ import { ExportDto } from './dto/export.dto';
 import { Cacheable } from '../common/decorators/cacheable.decorator';
 import { RevenueReport } from './interfaces/revenue-report.dto';
 import { DashboardStats } from './interfaces/dashboard-stats.dto';
+import { Role } from '@common/types/role.type';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN')
+@Roles(Role.ADMIN)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

@@ -6,7 +6,6 @@ import {
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
-import { setupLogging } from '@common/logging';
 import { HttpExceptionFilter } from '@common/filters/http-exception.filter';
 import helmet from 'fastify-helmet';
 import fastifySecureSession from 'fastify-secure-session';

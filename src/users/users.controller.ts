@@ -52,7 +52,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   findOne(@Param('id') id: string) {
-    return this.usersService.findById(+id);
+    return this.usersService.findById(id);
   }
 
   @Put(':id')
@@ -87,6 +87,6 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   remove(@Param('id') id: string, @CurrentUser() user: User) {
-    return this.usersService.remove(+id, user.id);
+    return this.usersService.remove(id, user.id);
   }
 }
