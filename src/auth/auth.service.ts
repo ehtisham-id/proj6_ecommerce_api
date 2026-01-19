@@ -6,7 +6,8 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { RedisService } from '@common/redis/redis.service';
 import { User } from '@database/entities/user.entity';
-import { RegisterDto, LoginDto } from './dto';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh.dto';
 
 @Injectable()

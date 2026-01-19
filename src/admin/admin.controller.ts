@@ -4,16 +4,19 @@ import {
   Query, 
   UseGuards, 
   Put,
-  Post 
+  Post,
+  Body
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
-import { RolesGuard } from '@common/guards/roles.guard';
-import { Roles } from '@common/decorators/roles.decorator';
-import { AnalyticsFilterDto } from './dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { AnalyticsFilterDto } from './dto/analytics-filter.dto';
 import { ExportDto } from './dto/export.dto';
+import { Cacheable } from '../common/decorators/cacheable.decorator';
+import { RevenueReport } from './interfaces/revenue-report.dto';
+import { DashboardStats } from './interfaces/dashboard-stats.dto';
 
-@ApiTags('admin')
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN')
@@ -27,7 +30,7 @@ export class AdminController {
   }
 
   @Get('revenue')
-  getRevenueReport(@Query() filter: AnalyticsFilterDto) {
+  getRevenueReport(@Query() filter: AnalyticsFilterDto): RevenueReport[] {
     return this.adminService.getRevenueReport(filter);
   }
 

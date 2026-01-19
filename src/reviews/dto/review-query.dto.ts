@@ -1,4 +1,4 @@
-import { IsOptional, IsInt, Min, IsEnum, IsUUID } from 'class-validator';
+import { IsOptional, IsInt, Min, IsEnum, IsUUID, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ReviewStatus } from '../entities/review.entity';
 

@@ -1,4 +1,4 @@
-import { IsUUID, IsInt, Min, Max, IsString, Length, IsOptional, IsArray, IsURL, ArrayNotEmpty, ArrayMaxSize } from 'class-validator';
+import { IsUUID, IsInt, Min, Max, IsString, Length, IsOptional, IsArray,  ArrayNotEmpty, ArrayMaxSize } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateReviewDto {
@@ -18,6 +18,5 @@ export class CreateReviewDto {
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(5)
-  @IsURL({}, { each: true })
   images?: string[];
 }

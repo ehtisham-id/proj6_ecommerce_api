@@ -13,7 +13,7 @@ import { OrderStatus } from '@common/enums/order-status.enum';
 @Check('"totalAmount" >= 0')
 export class Order {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string ;
 
   @Column()
   userId: string;
@@ -38,7 +38,7 @@ export class Order {
     enum: OrderStatus,
     default: OrderStatus.PENDING,
   })
-  status: OrderStatus;
+  status: OrderStatus = OrderStatus.PENDING;
 
   @Column()
   @IsString()

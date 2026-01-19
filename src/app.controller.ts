@@ -12,15 +12,15 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor 
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
-import { RolesGuard } from '@common/guards/roles.guard';
-import { Roles } from '@common/decorators/roles.decorator';
-import { CurrentUser } from '@common/decorators/current-user.decorator';
-import { User } from './entities/user.entity';
+import { UsersService } from './users/users.service';
+import { CreateUserDto } from './users/dto/create-user.dto';
+import { UpdateUserDto } from './users/dto/update-user.dto';
+import { UpdateRoleDto } from './users/dto/update-role.dto';
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
+import { RolesGuard } from '@auth/guards/roles.guard';
+import { Roles } from '@auth/decorators/roles.decorator';
+import { CurrentUser } from '@auth/decorators/current-user.decorator';
+import { User } from './users/entities/user.entity';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -92,19 +92,19 @@ export class UsersController {
     return this.usersService.softDelete(id, adminUser.id);
   }
 
-  @Controller('admin/performance')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN')
-export class PerformanceController {
-  @Get('cache-stats')
-  async getCacheStats() {
-    return {
-      hits: await this.redis.get('cache:hits'),
-      misses: await this.redis.get('cache:misses'),
-      hitRatio: '85.2%',
-      memoryUsage: process.memoryUsage(),
-    };
-  }
-}
+//   @Controller('admin/performance')
+// @UseGuards(JwtAuthGuard, RolesGuard)
+// @Roles('ADMIN')
+// export class PerformanceController {
+//   @Get('cache-stats')
+//   async getCacheStats() {
+//     return {
+//       hits: await this.redis.get('cache:hits'),
+//       misses: await this.redis.get('cache:misses'),
+//       hitRatio: '85.2%',
+//       memoryUsage: process.memoryUsage(),
+//     };
+//   }
+// }
 
 }

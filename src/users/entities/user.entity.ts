@@ -46,7 +46,7 @@ export class User {
   isActive: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt: Date ;
 
   @UpdateDateColumn()
   updatedAt: Date;

@@ -1,5 +1,5 @@
 // src/modules/admin/dto/analytics-filter.dto.ts
-import { IsOptional, IsEnum, IsDateString, IsInt, Min, Type } from 'class-validator';
+import { IsOptional, IsEnum, IsDateString, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum AnalyticsPeriod {

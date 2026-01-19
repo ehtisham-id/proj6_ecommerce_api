@@ -3,25 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, MoreThan, LessThan } from 'typeorm';
 import { AuditLog } from './entities/audit-log.entity';
 import { Order } from '../orders/entities/order.entity';
-import { AnalyticsFilterDto } from './dto';
-import { CacheService } from '@common/cache/cache.service';
+import { AnalyticsFilterDto } from './dto/analytics-filter.dto';
+import { CacheService } from '../cache/cache.service';
 
-interface DashboardStats {
-  totalRevenue: number;
-  totalOrders: number;
-  totalUsers: number;
-  totalProducts: number;
-  avgOrderValue: number;
-  conversionRate: number;
-  activeSellers: number;
-}
-
-interface RevenueReport {
-  date: string;
-  revenue: number;
-  orders: number;
-  avgOrderValue: number;
-}
+import { RevenueReport } from './interfaces/revenue-report.dto';
+import { DashboardStats } from './interfaces/dashboard-stats.dto';
 
 @Injectable()
 export class AdminService {

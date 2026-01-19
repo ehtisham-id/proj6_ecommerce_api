@@ -1,14 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { WinstonModule } from 'nestjs-winston';
-import { ConfigConfigFactory } from '@config/config.factory';
-import { LoggingModule } from '@common/logging/logging.module';
-import { DatabaseModule } from '@database/database.module';
 
-
-import { AuthModule } from './modules/auth/auth.module';
+import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { Product } from './products/entities/product.entity';
 import { InventoryModule } from './inventory/inventory.module';
@@ -18,39 +13,32 @@ import { PaymentsModule } from './payments/payments.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { AdminModule } from './admin/admin.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-      load: [ConfigConfigFactory],
     }),
-    ThrottlerModule.forRoot(async ({ config }) => [
-      {
-        ttl: config.get('THROTTLE_TTL'),
-        limit: config.get('THROTTLE_LIMIT'),
-      },
-    ]),
-    WinstonModule.forRootAsync({
+    ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
+      inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        level: configService.get('NODE_ENV') === 'production' ? 'info' : 'debug',
-        // Production logging config
+        ttl: configService.get<number>('THROTTLE_TTL'),
+        limit: configService.get<number>('THROTTLE_LIMIT'),
       }),
     }),
-    LoggingModule,
-    DatabaseModule,
     AuthModule,
     UsersModule,
     ProductsModule,
-    CategoriesModule, InventoryModule,
+    InventoryModule,
     CartModule,
     OrdersModule,
     PaymentsModule,
     ReviewsModule,
     CouponsModule,
-    AdminModule
+    AdminModule,
   ],
 })
 export class AppModule {}

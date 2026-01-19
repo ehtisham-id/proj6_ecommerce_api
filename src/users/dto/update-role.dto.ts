@@ -3,5 +3,5 @@ import { Role } from '@common/types/role.type';
 
 export class UpdateRoleDto {
   @IsEnum(Role)
-  role: Role;
+  role: Role  = Role.USER;
 }
