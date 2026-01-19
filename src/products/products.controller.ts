@@ -1,6 +1,19 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, UseInterceptors, ClassSerializerInterceptor, ParseUUIDPipe } from '@nestjs/common';
-import { ProductsService } from './products.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 
+import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
@@ -9,7 +22,8 @@ import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles } from '@auth/decorators/roles.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
-import { Product } from './entities/product.entity';
+
+import { Role } from '@common/types/role.type';
 
 @Controller('products')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -18,9 +32,12 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('SELLER', 'ADMIN')
-  create(@Body() createProductDto: CreateProductDto, @CurrentUser() user: any) {
-    return this.productsService.create(createProductDto, user.id);
+  @Roles(Role.SELLER, Role.ADMIN)
+  create(
+    @Body() dto: CreateProductDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.productsService.create(dto, user.id);
   }
 
   @Get()
@@ -35,25 +52,28 @@ export class ProductsController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('SELLER', 'ADMIN')
+  @Roles(Role.SELLER, Role.ADMIN)
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateProductDto: UpdateProductDto,
+    @Body() dto: UpdateProductDto,
     @CurrentUser() user: any,
   ) {
-    return this.productsService.update(id, updateProductDto, user.id);
+    return this.productsService.update(id, dto, user.id);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('SELLER', 'ADMIN')
-  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: any) {
+  @Roles(Role.SELLER, Role.ADMIN)
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: any,
+  ) {
     return this.productsService.remove(id, user.id);
   }
 
   @Post(':id/images')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('SELLER', 'ADMIN')
+  @Roles(Role.SELLER, Role.ADMIN)
   addImage(
     @Param('id', ParseUUIDPipe) productId: string,
     @Body('url') imageUrl: string,
@@ -64,7 +84,7 @@ export class ProductsController {
 
   @Delete(':id/images/:imageId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('SELLER', 'ADMIN')
+  @Roles(Role.SELLER, Role.ADMIN)
   removeImage(
     @Param('id', ParseUUIDPipe) productId: string,
     @Param('imageId', ParseUUIDPipe) imageId: string,

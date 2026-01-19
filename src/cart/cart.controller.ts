@@ -1,13 +1,13 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Delete, 
-  Body, 
-  Param, 
-  UseGuards, 
-  ParseUUIDPipe 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { AddCartItemDto, UpdateCartItemDto } from './dto';
@@ -15,49 +15,45 @@ import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 
 @Controller('cart')
+@UseGuards(JwtAuthGuard)
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
-  async getCart(@CurrentUser() user: any) {
+  getCart(@CurrentUser() user: { id: string }) {
     return this.cartService.getCart(user.id);
   }
 
   @Post('items')
-  @UseGuards(JwtAuthGuard)
   async addItem(
     @Body() dto: AddCartItemDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: { id: string },
   ) {
     await this.cartService.addItem(user.id, dto);
     return this.cartService.getCart(user.id);
   }
 
   @Put('items/:productId')
-  @UseGuards(JwtAuthGuard)
   async updateItem(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Body() dto: UpdateCartItemDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: { id: string },
   ) {
     await this.cartService.updateItem(user.id, productId, dto);
     return this.cartService.getCart(user.id);
   }
 
   @Delete('items/:productId')
-  @UseGuards(JwtAuthGuard)
   async removeItem(
     @Param('productId', ParseUUIDPipe) productId: string,
-    @CurrentUser() user: any
+    @CurrentUser() user: { id: string },
   ) {
     await this.cartService.removeItem(user.id, productId);
     return this.cartService.getCart(user.id);
   }
 
   @Delete()
-  @UseGuards(JwtAuthGuard)
-  async clearCart(@CurrentUser() user: any) {
+  async clearCart(@CurrentUser() user: { id: string }) {
     await this.cartService.clearCart(user.id);
     return { message: 'Cart cleared successfully' };
   }

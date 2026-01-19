@@ -1,14 +1,14 @@
-import { 
-  Controller, 
-  Post, 
-  Get, 
-  Delete, 
-  Body, 
-  Param, 
-  Query, 
-  UseGuards, 
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
   ParseUUIDPipe,
-  Patch 
+  Patch,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles } from '@auth/decorators/roles.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
+import { Role } from '@common/types/role.type';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -25,7 +26,10 @@ export class ReviewsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Body() createReviewDto: CreateReviewDto, @CurrentUser() user: any) {
+  create(
+    @Body() createReviewDto: CreateReviewDto,
+    @CurrentUser() user: any,
+  ) {
     return this.reviewsService.create(user.id, createReviewDto);
   }
 
@@ -35,7 +39,7 @@ export class ReviewsController {
   }
 
   @Get('product/:productId')
-  async findProductReviews(
+  findProductReviews(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Query() query: ReviewQueryDto,
   ) {
@@ -44,13 +48,16 @@ export class ReviewsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: any) {
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: any,
+  ) {
     return this.reviewsService.delete(id, user.id);
   }
 
   @Patch(':id/approve')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   approve(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() moderator: any,

@@ -4,10 +4,9 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThanOrEqual, LessThanOrEqual, Like } from 'typeorm';
+import { Repository, FindOptionsWhere, Like, IsNull } from 'typeorm';
 
 import { Product, ProductStatus } from './entities/product.entity';
-import { Category } from '../categories/entities/category.entity';
 import { ProductImage } from './entities/product-image.entity';
 
 import { CreateProductDto } from './dto/create-product.dto';
@@ -20,9 +19,6 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-
-    @InjectRepository(Category)
-    private readonly categoryRepository: Repository<Category>,
 
     @InjectRepository(ProductImage)
     private readonly imageRepository: Repository<ProductImage>,
@@ -62,10 +58,9 @@ export class ProductsService {
       sortOrder = 'DESC',
     } = query;
 
-    const where: any = {
+    const where: FindOptionsWhere<Product> = {
       isActive: true,
-      deletedAt: null,
-      status: ProductStatus.PUBLISHED,
+      deletedAt: IsNull(),
     };
 
     if (search) {
@@ -78,14 +73,18 @@ export class ProductsService {
 
     if (status) {
       where.status = status;
+    } else {
+      where.status = ProductStatus.PUBLISHED;
     }
 
-    if (minPrice) {
-      where.price = MoreThanOrEqual(minPrice);
-    }
-
-    if (maxPrice) {
-      where.price = LessThanOrEqual(maxPrice);
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price = {};
+      if (minPrice !== undefined) {
+        (where.price as any).gte = minPrice;
+      }
+      if (maxPrice !== undefined) {
+        (where.price as any).lte = maxPrice;
+      }
     }
 
     const [products, total] = await this.productRepository.findAndCount({
@@ -119,7 +118,7 @@ export class ProductsService {
 
   async update(
     id: string,
-    updateProductDto: UpdateProductDto,
+    dto: UpdateProductDto,
     sellerId: string,
   ): Promise<Product> {
     const product = await this.findOne(id);
@@ -128,7 +127,11 @@ export class ProductsService {
       throw new BadRequestException('Can only update own products');
     }
 
-    Object.assign(product, updateProductDto);
+    if (dto.categoryId) {
+      await this.categoriesService.findOne(dto.categoryId);
+    }
+
+    Object.assign(product, dto);
     return this.productRepository.save(product);
   }
 

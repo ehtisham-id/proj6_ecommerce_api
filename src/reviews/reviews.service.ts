@@ -1,8 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, In } from 'typeorm';
+import { Repository, In } from 'typeorm';
+
 import { Review, ReviewStatus } from './entities/review.entity';
 import { ReviewModeration } from './entities/review-moderation.entity';
+
 import { CreateReviewDto } from './dto/create-review.dto';
 import { ReviewQueryDto } from './dto/review-query.dto';
 
@@ -14,13 +21,16 @@ import { User } from '../users/entities/user.entity';
 export class ReviewsService {
   constructor(
     @InjectRepository(Review)
-    private reviewRepository: Repository<Review>,
+    private readonly reviewRepository: Repository<Review>,
+
     @InjectRepository(ReviewModeration)
-    private moderationRepository: Repository<ReviewModeration>,
+    private readonly moderationRepository: Repository<ReviewModeration>,
+
     @InjectRepository(User)
-    private userRepository: Repository<User>,
-    private productsService: ProductsService,
-    private ordersService: OrdersService,
+    private readonly userRepository: Repository<User>,
+
+    private readonly productsService: ProductsService,
+    private readonly ordersService: OrdersService,
   ) {}
 
   async create(userId: string, dto: CreateReviewDto): Promise<Review> {
@@ -32,15 +42,23 @@ export class ReviewsService {
 
     // Check if user already reviewed this product
     const existingReview = await this.reviewRepository.findOne({
-      where: { productId: dto.productId, userId, status: In([ReviewStatus.APPROVED, ReviewStatus.PENDING]) }
+      where: {
+        productId: dto.productId,
+        userId,
+        status: In([ReviewStatus.APPROVED, ReviewStatus.PENDING]),
+      },
     });
 
     if (existingReview) {
-      throw new ConflictException('User can only submit one review per product');
+      throw new ConflictException(
+        'User can only submit one review per product',
+      );
     }
 
     const product = await this.productsService.findOne(dto.productId);
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
 
     const review = this.reviewRepository.create({
       ...dto,
@@ -48,42 +66,27 @@ export class ReviewsService {
       userId,
       product,
       user,
-      status: ReviewStatus.PENDING, // Auto-moderation in production
+      status: ReviewStatus.PENDING,
     });
 
     const savedReview = await this.reviewRepository.save(review);
-    
+
     // Update product rating cache (async)
     this.updateProductRating(product.id).catch(console.error);
-    
+
     return savedReview;
   }
 
-  async findAll(query: ReviewQueryDto): Promise<{
-    reviews: Review[];
-    total: number;
-    avgRating?: number;
-    page: number;
-    limit: number;
-  }> {
+  async findAll(query: ReviewQueryDto) {
     const { productId, page = 1, limit = 20, status, rating } = query;
 
-    const where: any = { 
-      status: ReviewStatus.APPROVED,
-      deletedAt: null 
+    const where: any = {
+      deletedAt: null,
+      status: status ?? ReviewStatus.APPROVED,
     };
 
-    if (productId) {
-      where.productId = productId;
-    }
-
-    if (status) {
-      where.status = status;
-    }
-
-    if (rating) {
-      where.rating = rating;
-    }
+    if (productId) where.productId = productId;
+    if (rating) where.rating = rating;
 
     const [reviews, total] = await this.reviewRepository.findAndCount({
       where,
@@ -93,29 +96,26 @@ export class ReviewsService {
       take: limit,
     });
 
-    const avgRating = await this.getProductAvgRating(productId);
+    const avgRating = productId ? await this.getProductAvgRating(productId) : 0;
 
     return { reviews, total, avgRating, page: +page, limit: +limit };
   }
 
-  async findProductReviews(productId: string, query: ReviewQueryDto): Promise<{
-    reviews: Review[];
-    total: number;
-    avgRating: number;
-    ratingDistribution: Record<number, number>;
-  }> {
-    const where: any = { 
-      productId, 
+  async findProductReviews(productId: string, query: ReviewQueryDto) {
+    const { page = 1, limit = 20 } = query;
+
+    const where = {
+      productId,
       status: ReviewStatus.APPROVED,
-      deletedAt: null 
+      deletedAt: null,
     };
 
     const [reviews, total] = await this.reviewRepository.findAndCount({
       where,
       relations: ['user'],
       order: { createdAt: 'DESC', isHelpful: 'DESC' },
-      skip: (query.page! - 1) * query.limit!,
-      take: query.limit!,
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     const avgRating = await this.getProductAvgRating(productId);
@@ -137,7 +137,11 @@ export class ReviewsService {
     await this.updateProductRating(review.productId);
   }
 
-  async approveReview(reviewId: string, moderatorId: string, reason?: string): Promise<Review> {
+  async approveReview(
+    reviewId: string,
+    moderatorId: string,
+    reason?: string,
+  ): Promise<Review> {
     const review = await this.reviewRepository.findOne({
       where: { id: reviewId, status: ReviewStatus.PENDING },
       relations: ['product'],
@@ -150,7 +154,6 @@ export class ReviewsService {
     review.status = ReviewStatus.APPROVED;
     const approvedReview = await this.reviewRepository.save(review);
 
-    // Record moderation action
     const moderation = this.moderationRepository.create({
       reviewId,
       moderatorId,
@@ -159,38 +162,39 @@ export class ReviewsService {
     });
     await this.moderationRepository.save(moderation);
 
-    // Update product ratings
     await this.updateProductRating(review.productId);
-
     return approvedReview;
   }
 
-  private async verifyPurchase(userId: string, productId: string): Promise<boolean> {
-    const orderCount = await this.ordersService.orderRepository.count({
-      where: {
-        userId,
-        status: In(['PAID', 'COMPLETED']),
-        items: { productId }
-      },
-      relations: ['items']
-    });
-    return orderCount > 0;
+  private async verifyPurchase(
+    userId: string,
+    productId: string,
+  ): Promise<boolean> {
+    const orders = await this.ordersService.findAll(userId, 1, 50);
+
+    const hasPurchased = orders.orders.some((order: any) =>
+      order.items.some((item: any) => item.productId === productId),
+    );
+
+    return hasPurchased;
   }
 
   private async getProductAvgRating(productId?: string): Promise<number> {
     if (!productId) return 0;
-    
+
     const result = await this.reviewRepository
       .createQueryBuilder('review')
       .select('AVG(review.rating)', 'avgRating')
       .where('review.productId = :productId', { productId })
       .andWhere('review.status = :status', { status: ReviewStatus.APPROVED })
       .getRawOne();
-    
+
     return parseFloat(result.avgRating || '0');
   }
 
-  private async getRatingDistribution(productId: string): Promise<Record<number, number>> {
+  private async getRatingDistribution(
+    productId: string,
+  ): Promise<Record<number, number>> {
     const result = await this.reviewRepository
       .createQueryBuilder('review')
       .select('review.rating', 'rating')
@@ -200,17 +204,17 @@ export class ReviewsService {
       .groupBy('review.rating')
       .getRawMany();
 
-    return result.reduce((acc, row) => {
-      acc[parseInt(row.rating)] = parseInt(row.count);
-      return acc;
-    }, {} as Record<number, number>);
+    return result.reduce(
+      (acc, row) => {
+        acc[parseInt(row.rating)] = parseInt(row.count);
+        return acc;
+      },
+      {} as Record<number, number>,
+    );
   }
 
   private async updateProductRating(productId: string): Promise<void> {
-    // Update product entity with latest avg rating (cached)
     const avgRating = await this.getProductAvgRating(productId);
-    
-    // In production: Update product metadata with rating info
     console.log(`Product ${productId} rating updated to ${avgRating}`);
   }
 }

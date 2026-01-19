@@ -1,75 +1,106 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
+
 import { Order } from './entities/order.entity';
-import { OrderStatus } from '@common/enums/order-status.enum';
 import { OrderItem } from './entities/order-item.entity';
+import { OrderStatus } from '@common/enums/order-status.enum';
+
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+
 import { CartService } from '../cart/cart.service';
 import { InventoryService } from '../inventory/inventory.service';
 import { ProductsService } from '../products/products.service';
-import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order)
-    private orderRepository: Repository<Order>,
+    private readonly orderRepository: Repository<Order>,
+
     @InjectRepository(OrderItem)
-    private orderItemRepository: Repository<OrderItem>,
-    private dataSource: DataSource,
-    private cartService: CartService,
-    private inventoryService: InventoryService,
-    private productsService: ProductsService,
+    private readonly orderItemRepository: Repository<OrderItem>,
+
+    private readonly dataSource: DataSource,
+    private readonly cartService: CartService,
+    private readonly inventoryService: InventoryService,
+    private readonly productsService: ProductsService,
   ) {}
 
-  // In orders.service.ts createOrder method, add:
-async createOrder(userId: string, createOrderDto: CreateOrderDto & { couponCode?: string }): Promise<Order> {
-  let discountAmount = 0;
-  let couponId: string | null = null;
+  /**
+   * CREATE ORDER
+   * -------------------------------------------------------
+   * 🔴 EXTENSION POINT:
+   * - Coupons
+   * - Shipping calculation
+   * - Payment intent creation
+   */
+  async createOrder(userId: string, dto: CreateOrderDto): Promise<Order> {
+    return this.dataSource.transaction(async (manager) => {
+      const cart = await this.cartService.getCart(userId);
 
-  if (createOrderDto.couponCode) {
-    const couponResult = await this.couponsService.applyCoupon(userId, {
-      code: createOrderDto.couponCode,
-      orderAmount: totalAmount // pre-discount total
+      if (!cart.items.length) {
+        throw new ConflictException('Cart is empty');
+      }
+
+      let totalAmount = 0;
+      const orderItems: OrderItem[] = [];
+
+      for (const cartItem of cart.items) {
+        const product = await this.productsService.findOne(cartItem.productId);
+
+        if (!product) {
+          throw new NotFoundException('Product not found');
+        }
+
+        await this.inventoryService.reserveStock(product.id, cartItem.quantity);
+
+        totalAmount += cartItem.quantity * cartItem.priceAtAdd;
+
+        orderItems.push(
+          this.orderItemRepository.create({
+            productId: product.id,
+            quantity: cartItem.quantity,
+            price: cartItem.priceAtAdd,
+          }),
+        );
+      }
+
+      // 🔴 FUTURE: coupon / discount calculation here
+      const discountAmount = 0;
+
+      // 🔴 FUTURE: shipping calculation here
+      const shippingAmount = dto.shippingAmount ?? 0;
+
+      const finalAmount = totalAmount - discountAmount + shippingAmount;
+
+      const order = manager.getRepository(Order).create({
+        userId,
+        status: OrderStatus.PENDING,
+        totalAmount: finalAmount,
+        discountAmount,
+        shippingAmount,
+        items: orderItems,
+      });
+
+      const savedOrder = await manager.getRepository(Order).save(order);
+
+      await this.cartService.clearCart(userId);
+
+      return savedOrder;
     });
-
-    if (couponResult.valid) {
-      discountAmount = couponResult.discountAmount;
-      couponId = couponResult.coupon!.id;
-      
-      // Record usage during transaction
-      await this.couponsService.recordUsage(
-        couponResult.coupon!.id, 
-        userId, 
-        savedOrder.id, // will be available after save
-        totalAmount,
-        discountAmount
-      );
-    }
   }
 
-  const finalAmount = totalAmount - discountAmount + (createOrderDto.shippingAmount || 0);
-  
-  const order = this.orderRepository.create({
-    // ... other fields
-    discountAmount,
-    couponId,
-    totalAmount: finalAmount,
-  });
-}
-
-
-  async findAll(userId: string, page = 1, limit = 20): Promise<{
-    orders: Order[];
-    total: number;
-    page: number;
-    limit: number;
-  }> {
+  async findAll(userId: string, page = 1, limit = 20) {
     const [orders, total] = await this.orderRepository.findAndCount({
       where: { userId, deletedAt: null },
-      relations: ['items', 'items.product', 'user'],
+      relations: ['items', 'items.product'],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -81,7 +112,7 @@ async createOrder(userId: string, createOrderDto: CreateOrderDto & { couponCode?
   async findOne(orderId: string, userId: string): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { id: orderId, userId, deletedAt: null },
-      relations: ['items', 'items.product', 'user'],
+      relations: ['items', 'items.product'],
     });
 
     if (!order) {
@@ -91,10 +122,15 @@ async createOrder(userId: string, createOrderDto: CreateOrderDto & { couponCode?
     return order;
   }
 
+  /**
+   * UPDATE ORDER STATUS
+   * -------------------------------------------------------
+   * Handles inventory rollback on cancellation
+   */
   async updateStatus(
     orderId: string,
-    updateStatusDto: UpdateOrderStatusDto,
-    adminUserId?: string
+    dto: UpdateOrderStatusDto,
+    adminUserId?: string,
   ): Promise<Order> {
     return this.dataSource.transaction(async (manager) => {
       const order = await manager.getRepository(Order).findOne({
@@ -107,7 +143,6 @@ async createOrder(userId: string, createOrderDto: CreateOrderDto & { couponCode?
         throw new NotFoundException('Order not found');
       }
 
-      // Status transition validation
       const validTransitions: Record<OrderStatus, OrderStatus[]> = {
         [OrderStatus.PENDING]: [OrderStatus.PAID, OrderStatus.CANCELLED],
         [OrderStatus.PAID]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
@@ -116,26 +151,37 @@ async createOrder(userId: string, createOrderDto: CreateOrderDto & { couponCode?
         [OrderStatus.CANCELLED]: [],
       };
 
-      if (!validTransitions[order.status]?.includes(updateStatusDto.status)) {
-        throw new BadRequestException(`Invalid status transition: ${order.status} → ${updateStatusDto.status}`);
+      if (!validTransitions[order.status].includes(dto.status)) {
+        throw new BadRequestException(
+          `Invalid status transition: ${order.status} → ${dto.status}`,
+        );
       }
 
-      // Handle inventory for cancellations
-      if (updateStatusDto.status === OrderStatus.CANCELLED && order.status !== OrderStatus.CANCELLED) {
+      if (
+        dto.status === OrderStatus.CANCELLED &&
+        order.status !== OrderStatus.CANCELLED
+      ) {
         for (const item of order.items) {
-          await this.inventoryService.cancelReservation(item.productId, item.quantity, orderId);
+          await this.inventoryService.cancelReservation(
+            item.productId,
+            item.quantity,
+            orderId,
+          );
         }
       }
 
-      order.status = updateStatusDto.status;
+      order.status = dto.status;
       order.updatedAt = new Date();
 
       return manager.getRepository(Order).save(order);
     });
   }
 
+  /**
+   * USER ORDER STATS
+   */
   async getUserOrdersStats(userId: string) {
-    const result = await this.orderRepository
+    return this.orderRepository
       .createQueryBuilder('order')
       .select('order.status', 'status')
       .addSelect('COUNT(order.id)', 'count')
@@ -143,7 +189,5 @@ async createOrder(userId: string, createOrderDto: CreateOrderDto & { couponCode?
       .andWhere('order.deletedAt IS NULL')
       .groupBy('order.status')
       .getRawMany();
-
-    return result;
   }
 }
