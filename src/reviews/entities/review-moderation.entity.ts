@@ -11,26 +11,26 @@ import { User } from '../../users/entities/user.entity';
 @Entity('review_moderations')
 export class ReviewModeration {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  reviewId: string;
+  reviewId!: string;
 
   @ManyToOne(() => Review, { onDelete: 'CASCADE' })
-  review: Review;
+  review!: Review;
 
   @Column()
-  moderatorId: string;
+  moderatorId!: string;
 
   @ManyToOne(() => User)
-  moderator: User;
+  moderator!: User;
 
   @Column('text')
-  action: 'APPROVED' | 'REJECTED';
+  action!: 'APPROVED' | 'REJECTED';
 
   @Column('text', { nullable: true })
   reason?: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt?: Date;
 }

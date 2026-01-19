@@ -19,8 +19,8 @@ import {
   IsEnum,
   Length,
 } from 'class-validator';
-import { User } from '../../../users/entities/user.entity';
-import { Category } from '../../../categories/entities/category.entity';
+import { User } from '../../users/entities/user.entity';
+import { Category } from '../../categories/entities/category.entity';
 import { ProductImage } from './product-image.entity';
 
 export enum ProductStatus {
@@ -37,30 +37,30 @@ export enum ProductStatus {
 @Index('idx_products_price', ['price'])
 export class Product {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
   @IsString()
   @Length(3, 200)
-  name: string;
+  name!: string;
 
   @Column('text')
   @IsString()
-  description: string;
+  description!: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   @IsNumber()
   @IsPositive()
-  price: number;
+  price!: number;
 
   @Column()
   @IsNumber()
   @IsPositive()
-  stockQuantity: number;
+  stockQuantity!: number;
 
   @Column({ default: 0 })
   @IsNumber()
-  soldQuantity: number;
+  soldQuantity!: number;
 
   @Column({
     type: 'enum',
@@ -68,38 +68,37 @@ export class Product {
     default: ProductStatus.DRAFT,
   })
   @IsEnum(ProductStatus)
-  status: ProductStatus;
+  status!: ProductStatus;
 
   @Column({ nullable: true })
   @IsString()
-  sku: string;
+  sku?: string;
 
   @Column({ default: true })
   @IsBoolean()
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column()
-  sellerId: string;
+  sellerId!: string;
 
   @Column()
-  categoryId: string;
+  categoryId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'sellerId' })
-  seller: User;
+  seller!: User;
 
   @ManyToOne(() => Category, { nullable: true })
   @JoinColumn({ name: 'categoryId' })
-  category: Category;
-
+  category!: Category;
   @OneToMany(() => ProductImage, (image) => image.product)
-  images: ProductImage[];
+  images!: ProductImage[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn()
   deletedAt?: Date;

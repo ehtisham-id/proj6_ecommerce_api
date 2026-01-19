@@ -3,12 +3,11 @@ import {
   NestInterceptor, 
   ExecutionContext, 
   CallHandler,
-  CACHE_MANAGER 
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { CacheService, CacheOptions } from '../cache/cache.service';
+import { CacheService, CacheOptions } from '../cache.service';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {

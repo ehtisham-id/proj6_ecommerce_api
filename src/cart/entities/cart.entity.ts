@@ -6,16 +6,16 @@ import { User } from '../../users/entities/user.entity';
 @Index('idx_carts_updated', ['updatedAt'])
 export class Cart {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  userId: string;
+  userId!: string;
 
   @ManyToOne(() => User)
-  user: User;
+  user!: User;
 
   @Column('jsonb')
-  items: Array<{
+  items!: Array<{
     productId: string;
     quantity: number;
     priceAtAdd: number;
@@ -23,17 +23,17 @@ export class Cart {
   }>;
 
   @Column('decimal', { precision: 12, scale: 2 })
-  totalAmount: number;
+  totalAmount!: number;
 
   @Column('int')
-  totalQuantity: number;
+  totalQuantity!: number;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

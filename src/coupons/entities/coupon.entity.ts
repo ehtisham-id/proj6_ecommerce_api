@@ -9,41 +9,41 @@ import { DiscountType } from '@common/enums/discount-type.enum';
 @Index('idx_coupons_type', ['discountType'])
 export class Coupon {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
   @IsString()
   @Length(4, 20)
-  code: string;
+  code!: string;
 
   @Column('decimal', { precision: 8, scale: 2 })
-  discountValue: number;
+  discountValue!: number;
 
   @Column({
     type: 'enum',
     enum: DiscountType,
   })
-  discountType: DiscountType;
+  discountType!: DiscountType;
 
   @Column('int')
   @Min(0)
-  maxUses: number;
+  maxUses!: number;
 
   @Column('int', { default: 0 })
-  usedCount: number;
+  usedCount!: number;
 
   @Column('int', { default: 1 })
-  maxUsesPerUser: number;
+  maxUsesPerUser!: number;
 
   @Column()
   @IsDateString()
-  expiresAt: Date;
+  expiresAt!: Date;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ default: false })
-  isPublic: boolean; // vs private for specific users
+  isPublic!: boolean; // vs private for specific users
 
   @Column('uuid', { nullable: true, array: true })
   allowedUserIds?: string[];
@@ -52,10 +52,10 @@ export class Coupon {
   minOrderAmount?: number;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn()
   deletedAt?: Date;

@@ -1,5 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
@@ -17,15 +20,26 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Global validation pipe
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    disableErrorMessages: configService.get('NODE_ENV') === 'production',
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      disableErrorMessages: configService.get('NODE_ENV') === 'production',
+    }),
+  );
 
   // Global exception filter
   app.useGlobalFilters(new HttpExceptionFilter());
+
+  // app.useGlobalInterceptors(
+  //   new CacheInterceptor(reflector, cacheService),
+  //   new PerformanceInterceptor(),
+  //   new CompressionInterceptor(),
+  // );
+
+  // // Global cache invalidation pipe
+  // app.useGlobalPipes(new CacheInvalidationPipe());
 
   // API Versioning
   app.enableVersioning({
@@ -57,14 +71,3 @@ async function bootstrap() {
 }
 
 void bootstrap();
-
-Add
-// Update main.ts
-app.useGlobalInterceptors(
-  new CacheInterceptor(reflector, cacheService),
-  new PerformanceInterceptor(),
-  new CompressionInterceptor(),
-);
-
-// Global cache invalidation pipe
-app.useGlobalPipes(new CacheInvalidationPipe());

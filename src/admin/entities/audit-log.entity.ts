@@ -16,17 +16,17 @@ export enum AuditAction {
 @Index(['action', 'createdAt'])
 export class AuditLog {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  actorId: string; // Admin/Seller/System user who performed action
+  actorId!: string; // Admin/Seller/System user who performed action
 
   @ManyToOne(() => User)
-  actor: User;
+  actor!: User;
 
   @Column()
   @Index()
-  action: AuditAction;
+  action!: AuditAction;
 
   @Column('uuid', { array: true, nullable: true })
   targetIds?: string[]; // Resources affected
@@ -38,14 +38,14 @@ export class AuditLog {
   after: any;
 
   @Column('text')
-  ipAddress: string;
+  ipAddress!: string;
 
   @Column('text', { nullable: true })
-  userAgent: string;
+  userAgent!: string;
 
   @Column('text', { nullable: true })
   description?: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }

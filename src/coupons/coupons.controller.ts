@@ -9,12 +9,12 @@ import {
   ParseUUIDPipe 
 } from '@nestjs/common';
 import { CouponsService } from './coupons.service';
-import { CreateCouponDto, ApplyCouponDto } from './dto';
-
+import { CreateCouponDto } from './dto/create-coupon.dto';
+import { ApplyCouponDto } from './dto/apply-coupon.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '@auth/decorators/roles.decorator';
-import { CurrentUser } from '@common/decorators/current-user.decorator';
+import { CurrentUser } from '@auth/decorators/current-user.decorator';
 
 @Controller('coupons')
 export class CouponsController {

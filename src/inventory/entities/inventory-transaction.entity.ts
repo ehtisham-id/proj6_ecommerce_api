@@ -17,20 +17,20 @@ export enum InventoryTransactionType {
 @Index('idx_inventory_tx_type', ['type'])
 export class InventoryTransaction {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  productId: string;
+  productId!: string;
 
   @Column()
-  inventoryId: string;
+  inventoryId!: string;
 
   @Column()
   @IsEnum(InventoryTransactionType)
-  type: InventoryTransactionType;
+  type!: InventoryTransactionType;
 
   @Column('int')
-  quantity: number;
+  quantity!: number;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   referenceAmount?: number;
@@ -48,5 +48,5 @@ export class InventoryTransaction {
   user?: User;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }

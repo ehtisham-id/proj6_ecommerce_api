@@ -7,29 +7,29 @@ import { Product } from '../../products/entities/product.entity';
 @Index('idx_order_items_order', ['orderId'])
 export class OrderItem {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  orderId: string;
+  orderId!: string;
 
   @ManyToOne(() => Order, { onDelete: 'CASCADE' })
-  order: Order;
+  order!: Order;
 
   @Column()
-  productId: string;
+  productId!: string;
 
   @ManyToOne(() => Product)
-  product: Product;
+  product!: Product;
 
   @Column('int')
   @IsInt()
   @IsPositive()
-  quantity: number;
+  quantity!: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
   @IsDecimal()
-  price: number;
-
+  price!: number;
+  
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
-  discount: number;
+  discount!: number;
 }

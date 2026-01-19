@@ -12,19 +12,19 @@ import { Product } from './product.entity';
 @Entity('product_images')
 export class ProductImage {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
   @IsString()
-  url: string;
+  url!: string;
 
   @Column({ default: false })
   @IsBoolean()
-  isPrimary: boolean;
+  isPrimary!: boolean;
 
   @Column('int', { default: 0 })
   @IsNumber()
-  sortOrder: number;
+  sortOrder!: number;
 
   @Column({ nullable: true })
   @IsString()
@@ -34,10 +34,10 @@ export class ProductImage {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'productId' })
-  product: Product;
+  product!: Product;
 
   @Column()
-  productId: string;
+  productId!: string;
 
   @DeleteDateColumn()
   deletedAt?: Date;

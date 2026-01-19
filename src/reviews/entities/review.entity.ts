@@ -17,39 +17,39 @@ export enum ReviewStatus {
 @Index(['productId', 'status'])
 export class Review {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  productId: string;
+  productId!: string;
 
   @ManyToOne(() => Product, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
-  product: Product;
+  product!: Product;
 
   @Column()
-  userId: string;
+  userId!: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })
-  user: User;
+  user!: User;
 
   @Column('int')
   @Min(1)
   @Max(5)
-  rating: number;
+  rating!: number;
 
   @Column('text')
   @Length(10, 2000)
-  comment: string;
+  comment!: string;
 
   @Column({ default: ReviewStatus.PENDING })
-  status: ReviewStatus;
+  status!: ReviewStatus;
 
   @Column({ default: true })
-  isHelpful: boolean;
+  isHelpful!: boolean;
 
   @Column('int', { default: 0 })
-  helpfulCount: number;
+  helpfulCount!: number;
 
   @Column({ nullable: true })
   reviewerName?: string; // For guest reviews
@@ -58,10 +58,10 @@ export class Review {
   images?: string[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn()
   deletedAt?: Date;

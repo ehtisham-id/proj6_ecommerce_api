@@ -5,7 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { Payment, PaymentStatus } from './entities/payment.entity';
 import { OrdersService } from '../orders/orders.service';
 import { OrderStatus } from '@common/enums/order-status.enum';
-import { CreatePaymentIntentDto, ConfirmPaymentDto } from './dto';
+import {  ConfirmPaymentDto } from './dto/confirm-payment.dto';
+import { CreatePaymentIntentDto } from './dto/payment-intent.dto';
 import { IdempotencyService } from '@common/utils/idempotency.service';
 
 @Injectable()

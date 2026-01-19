@@ -7,39 +7,38 @@ import { Role } from '@common/types/role.type';
 @Index('idx_users_email', ['email'], { unique: true })
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ length: 100 })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @Column({ length: 50 })
   @MinLength(3)
-  firstName: string;
+  firstName!: string;
 
   @Column({ length: 50 })
-  lastName: string;
+  lastName!: string;
 
   @Column()
   @Exclude()
-  password: string;
-
+  password!: string;
   @Column({
     type: 'enum',
     enum: Role,
     default: Role.CUSTOMER,
   })
   @IsEnum(Role)
-  role: Role;
+  role!: Role;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn()
   deletedAt?: Date;

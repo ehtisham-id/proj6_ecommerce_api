@@ -5,28 +5,28 @@ import { DiscountType } from '@common/enums/discount-type.enum';
 export class CreateCouponDto {
   @IsString()
   @Length(4, 20)
-  code: string;
+  code!: string;
 
   @IsDecimal()
   @IsPositive()
   @Type(() => Number)
-  discountValue: number;
+  discountValue!: number;
 
   @IsEnum(DiscountType)
-  discountType: DiscountType;
+  discountType!: DiscountType;
 
   @IsInt()
   @Min(1)
   @Type(() => Number)
-  maxUses: number;
+  maxUses!: number;
 
   @IsInt()
   @Min(1)
   @Type(() => Number)
-  maxUsesPerUser: number;
+  maxUsesPerUser!: number;
 
   @IsDateString()
-  expiresAt: string;
+  expiresAt!: string;
 
   @IsOptional()
   @IsBoolean()

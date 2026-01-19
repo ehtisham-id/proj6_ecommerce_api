@@ -6,12 +6,12 @@ import { IsString, Length, IsBoolean, IsOptional } from 'class-validator';
 @Index('idx_categories_name', ['name'])
 export class Category {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
   @IsString()
   @Length(3, 100)
-  name: string;
+  name!: string;
 
   @Column({ nullable: true })
   @IsString()
@@ -19,25 +19,25 @@ export class Category {
 
   @Column({ default: true })
   @IsBoolean()
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ nullable: true })
   parentId?: string;
 
   @TreeChildren()
-  children: Category[];
+  children!: Category[];
 
   @TreeParent()
-  parent: Category;
+  parent!: Category;
 
   @TreeLevelColumn()
-  level: number;
+  level!: number;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn()
   deletedAt?: Date;

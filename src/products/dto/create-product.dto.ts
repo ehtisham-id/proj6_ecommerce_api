@@ -5,27 +5,27 @@ import { ProductStatus } from '../entities/product.entity';
 export class CreateProductDto {
   @IsString()
   @Length(3, 200)
-  name: string;
+  name!: string;
 
   @IsString()
-  description: string;
+  description!: string;
 
   @IsNumber()
   @IsPositive()
   @Type(() => Number)
-  price: number;
+  price!: number;
 
   @IsInt()
   @Min(0)
   @Type(() => Number)
-  stockQuantity: number;
+  stockQuantity!: number;
 
   @IsOptional()
   @IsString()
   sku?: string;
 
   @IsUUID()
-  categoryId: string;
+  categoryId!: string;
 
   @IsOptional()
   @IsEnum(ProductStatus)

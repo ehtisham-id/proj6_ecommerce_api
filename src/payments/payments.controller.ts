@@ -6,8 +6,12 @@ import {
   Headers 
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
-import { CreatePaymentIntentDto, ConfirmPaymentDto } from './dto';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+
+
+import {  ConfirmPaymentDto } from './dto/confirm-payment.dto';
+import { CreatePaymentIntentDto } from './dto/payment-intent.dto';
+
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { Public } from '@common/decorators/public.decorator';
 
 @Controller('payments')

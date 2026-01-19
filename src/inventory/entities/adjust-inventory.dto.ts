@@ -4,12 +4,12 @@ import { InventoryTransactionType } from '../entities/inventory-transaction.enti
 
 export class AdjustInventoryDto {
   @IsUUID()
-  productId: string;
+  productId!: string;
 
   @IsInt()
   @Min(-999999)
   @Type(() => Number)
-  quantity: number;
+  quantity!: number;
 
   @IsOptional()
   @IsString()

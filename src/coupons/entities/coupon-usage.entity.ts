@@ -6,29 +6,29 @@ import { User } from '../../users/entities/user.entity';
 @Index('idx_coupon_usage_coupon_user', ['couponId', 'userId'])
 export class CouponUsage {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  couponId: string;
+  couponId!: string;
 
   @ManyToOne(() => Coupon, { onDelete: 'CASCADE' })
-  coupon: Coupon;
+  coupon!: Coupon;
 
   @Column()
-  userId: string;
+  userId!: string;
 
   @ManyToOne(() => User)
-  user: User;
+  user!: User;
 
   @Column('uuid')
-  orderId: string;
+  orderId!: string;
 
   @Column('decimal', { precision: 12, scale: 2 })
-  orderAmount: number;
+  orderAmount!: number;
 
   @Column('decimal', { precision: 12, scale: 2 })
-  discountAmount: number;
+  discountAmount!: number;
 
   @CreateDateColumn()
-  usedAt: Date;
+  usedAt!: Date;
 }

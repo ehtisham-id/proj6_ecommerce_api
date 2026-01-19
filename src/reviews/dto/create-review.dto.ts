@@ -3,17 +3,17 @@ import { Type } from 'class-transformer';
 
 export class CreateReviewDto {
   @IsUUID()
-  productId: string;
+  productId!: string;
 
   @IsInt()
   @Min(1)
   @Max(5)
   @Type(() => Number)
-  rating: number;
+  rating!: number;
 
   @IsString()
   @Length(10, 2000)
-  comment: string;
+  comment!: string;
 
   @IsOptional()
   @IsArray()

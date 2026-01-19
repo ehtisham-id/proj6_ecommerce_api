@@ -11,11 +11,13 @@ import {
   Patch 
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
-import { CreateReviewDto, ReviewQueryDto } from './dto';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
-import { RolesGuard } from '@common/guards/roles.guard';
-import { Roles } from '@common/decorators/roles.decorator';
-import { CurrentUser } from '@common/decorators/current-user.decorator';
+import { CreateReviewDto } from './dto/create-review.dto';
+import { ReviewQueryDto } from './dto/review-query.dto';
+
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
+import { RolesGuard } from '@auth/guards/roles.guard';
+import { Roles } from '@auth/decorators/roles.decorator';
+import { CurrentUser } from '@auth/decorators/current-user.decorator';
 
 @Controller('reviews')
 export class ReviewsController {

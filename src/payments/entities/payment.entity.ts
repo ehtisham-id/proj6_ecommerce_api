@@ -16,20 +16,20 @@ export enum PaymentStatus {
 @Check('"amount" > 0')
 export class Payment {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true })
-  idempotencyKey: string;
+  idempotencyKey!: string;
 
   @Column()
-  orderId: string;
+  orderId!: string;
 
   @ManyToOne(() => Order, { onDelete: 'CASCADE' })
-  order: Order;
+  order!: Order;
 
   @Column('decimal', { precision: 12, scale: 2 })
   @Min(0.01)
-  amount: number;
+  amount!: number;
 
   @Column()
   currency: string = 'USD';
@@ -39,10 +39,10 @@ export class Payment {
     enum: PaymentStatus,
     default: PaymentStatus.PENDING,
   })
-  status: PaymentStatus;
+  status!: PaymentStatus;
 
   @Column({ nullable: true })
-  paymentIntentId: string;
+  paymentIntentId!: string;
 
   @Column('jsonb', { nullable: true })
   paymentMethod: any;
@@ -54,8 +54,8 @@ export class Payment {
   failureReason?: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

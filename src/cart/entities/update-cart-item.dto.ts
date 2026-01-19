@@ -5,7 +5,7 @@ export class UpdateCartItemDto {
   @IsInt()
   @Min(1)
   @Type(() => Number)
-  quantity: number;
+  quantity!: number;
 
   @IsOptional()
   @IsUUID()

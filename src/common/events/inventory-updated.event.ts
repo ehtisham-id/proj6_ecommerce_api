@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { InventoryService } from '../../modules/inventory/inventory.service';
+import { InventoryService } from '../../inventory/inventory.service';
 
 @Injectable()
 export class InventoryEvents {

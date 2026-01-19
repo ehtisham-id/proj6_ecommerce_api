@@ -3,7 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, In } from 'typeorm';
 import { Review, ReviewStatus } from './entities/review.entity';
 import { ReviewModeration } from './entities/review-moderation.entity';
-import { CreateReviewDto, ReviewQueryDto } from './dto';
+import { CreateReviewDto } from './dto/create-review.dto';
+import { ReviewQueryDto } from './dto/review-query.dto';
+
 import { ProductsService } from '../products/products.service';
 import { OrdersService } from '../orders/orders.service';
 import { User } from '../users/entities/user.entity';

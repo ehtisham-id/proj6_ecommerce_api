@@ -10,12 +10,12 @@ import {
 export class ExportDto {
   @IsString()
   @IsIn(['csv', 'excel'])
-  type: 'csv' | 'excel';
+  type!: 'csv' | 'excel';
 
   @IsArray()
   @ArrayNotEmpty()
   @IsString({ each: true })
-  entities: string[]; // e.g. ['orders','users','products']
+  entities!: string[]; // e.g. ['orders','users','products']
 
   @IsOptional()
   @IsArray()

@@ -3,12 +3,12 @@ import { Type } from 'class-transformer';
 
 export class CreatePaymentIntentDto {
   @IsUUID()
-  orderId: string;
+  orderId!: string;
 
   @IsDecimal()
   @Min(0.01)
   @Type(() => Number)
-  amount: number;
+  amount!: number;
 
   @IsOptional()
   @IsString()

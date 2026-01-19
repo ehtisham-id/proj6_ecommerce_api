@@ -10,11 +10,13 @@ import {
   ParseUUIDPipe 
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import { CreateOrderDto, UpdateOrderStatusDto } from './dto';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
-import { RolesGuard } from '@common/guards/roles.guard';
-import { Roles } from '@common/decorators/roles.decorator';
-import { CurrentUser } from '@common/decorators/current-user.decorator';
+import { CreateOrderDto } from './dto/create-order.dto';
+import {UpdateOrderStatusDto} from './dto/update-order-status.dto';
+
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
+import { RolesGuard } from '@auth/guards/roles.guard';
+import { Roles } from '@auth/decorators/roles.decorator';
+import { CurrentUser } from '@auth/decorators/current-user.decorator';
 
 @Controller('orders')
 export class OrdersController {

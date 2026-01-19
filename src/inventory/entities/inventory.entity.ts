@@ -9,35 +9,35 @@ import { Product } from '../../products/entities/product.entity';
 @Check('"availableQuantity" >= 0')
 export class Inventory {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  productId: string;
+  productId!: string;
 
   @ManyToOne(() => Product, { onDelete: 'CASCADE' })
-  product: Product;
+  product!: Product;
 
   @Column('int')
   @IsNumber()
   @IsPositive()
-  availableQuantity: number;
+  availableQuantity!: number;
 
   @Column('int', { default: 0 })
   @Min(0)
-  reservedQuantity: number;
+  reservedQuantity!: number;
 
   @Column('int', { default: 0 })
   @Min(0)
-  committedQuantity: number;
+  committedQuantity!: number;
 
   @VersionColumn()
-  version: number;
+  version!: number;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   // Computed properties
   get totalQuantity(): number {

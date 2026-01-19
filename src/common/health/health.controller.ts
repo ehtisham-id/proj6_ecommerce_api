@@ -1,4 +1,5 @@
-// src/common/health/health.controller.ts (created in Phase 18)
+import { Controller, Get } from '@nestjs/common';
+
 @Controller('health')
 export class HealthController {
   @Get()

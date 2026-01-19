@@ -3,10 +3,10 @@ import { Type } from 'class-transformer';
 
 export class AddCartItemDto {
   @IsUUID()
-  productId: string;
+  productId!: string;
 
   @IsInt()
   @Min(1)
   @Type(() => Number)
-  quantity: number;
+  quantity!: number;
 }

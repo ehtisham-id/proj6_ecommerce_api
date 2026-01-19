@@ -13,25 +13,25 @@ import { OrderStatus } from '@common/enums/order-status.enum';
 @Check('"totalAmount" >= 0')
 export class Order {
   @PrimaryGeneratedColumn('uuid')
-  id: string ;
+  id!: string ;
 
   @Column()
-  userId: string;
+  userId!: string;
 
   @ManyToOne(() => User)
-  user: User;
+  user!: User;
 
   @Column('decimal', { precision: 12, scale: 2 })
-  totalAmount: number;
+  totalAmount!: number;
 
   @Column('decimal', { precision: 12, scale: 2, default: 0 })
-  discountAmount: number;
+  discountAmount!: number;
 
   @Column('decimal', { precision: 12, scale: 2, default: 0 })
-  taxAmount: number;
+  taxAmount!: number;
 
   @Column('decimal', { precision: 12, scale: 2, default: 0 })
-  shippingAmount: number;
+  shippingAmount!: number;
 
   @Column({
     type: 'enum',
@@ -59,16 +59,16 @@ export class Order {
   billingAddress: any;
 
   @OneToMany(() => OrderItem, item => item.order)
-  items: OrderItem[];
+  items!: OrderItem[];
 
   @OneToMany(() => OrderShipment, shipment => shipment.order)
-  shipments: OrderShipment[];
+  shipments!: OrderShipment[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn()
   deletedAt?: Date;
