@@ -1,4 +1,6 @@
-// src/common/analytics/tracking.service.ts
+import { Injectable } from '@nestjs/common';
+import { RedisService } from '@common/redis/redis.service';
+
 @Injectable()
 export class TrackingService {
   constructor(private redis: RedisService) {}

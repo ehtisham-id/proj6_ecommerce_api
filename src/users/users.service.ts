@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -31,7 +31,7 @@ export class UsersService {
 
   async findAll(page = 1, limit = 10): Promise<{ users: User[]; total: number; page: number; limit: number }> {
     const [users, total] = await this.userRepository.findAndCount({
-      where: { isActive: true, deletedAt: null },
+      where: { isActive: true, deletedAt: IsNull() },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -42,7 +42,7 @@ export class UsersService {
 
   async findOne(id: string): Promise<User> {
     const user = await this.userRepository.findOne({ 
-      where: { id, isActive: true, deletedAt: null } 
+      where: { id, isActive: true, deletedAt: IsNull() } 
     });
     
     if (!user) {

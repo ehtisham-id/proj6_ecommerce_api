@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -27,7 +28,6 @@ export class CartService {
   private readonly cartTTL = 24 * 60 * 60; // 24 hours
 
   constructor(
-    private readonly redis: Redis,
     @InjectRepository(Cart)
     private cartRepository: Repository<Cart>,
     private inventoryService: InventoryService,
