@@ -9,6 +9,6 @@ import { AuditLoggerService } from '@common/audit/audit-logger.service';
   imports: [TypeOrmModule.forFeature([User])],
   providers: [UsersService, AuditLoggerService],
   controllers: [UsersController],
-  exports: [UsersService],
+  exports: [UsersService, TypeOrmModule],
 })
 export class UsersModule {}

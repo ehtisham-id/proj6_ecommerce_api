@@ -16,6 +16,6 @@ import { RedisModule } from '@common/redis/redis.module';
   ],
   controllers: [CartController],
   providers: [CartService],
-  exports: [CartService],
+  exports: [CartService, TypeOrmModule],
 })
 export class CartModule {}
