@@ -21,6 +21,7 @@ import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles } from '@auth/decorators/roles.decorator';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 import { User } from './users/entities/user.entity';
+import { Role } from '@common/types/role.type';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,14 +30,14 @@ export class UsersController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 10,
@@ -52,14 +53,14 @@ export class UsersController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
@@ -76,7 +77,7 @@ export class UsersController {
 
   @Patch(':id/role')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   updateRole(
     @Param('id') id: string, 
     @Body() updateRoleDto: UpdateRoleDto,
@@ -87,14 +88,14 @@ export class UsersController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   remove(@Param('id') id: string, @CurrentUser() adminUser: User) {
     return this.usersService.softDelete(id, adminUser.id);
   }
 
 //   @Controller('admin/performance')
 // @UseGuards(JwtAuthGuard, RolesGuard)
-// @Roles('ADMIN')
+// @Roles(Role.ADMIN)
 // export class PerformanceController {
 //   @Get('cache-stats')
 //   async getCacheStats() {

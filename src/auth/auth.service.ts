@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
@@ -14,6 +14,7 @@ import { User } from '@database/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh.dto';
+import { Role } from '@common/types/role.type';
 
 @Injectable()
 export class AuthService {
@@ -31,12 +32,10 @@ export class AuthService {
     const existingUser = await this.userRepository.findOne({
       where: { email: dto.email },
     });
-    if (existingUser) {
-      throw new ConflictException('Email already exists');
-    }
+    if (existingUser) throw new ConflictException('Email already exists');
 
     const user = this.userRepository.create(dto);
-    user.role = dto.role || 'CUSTOMER';
+    user.role = dto.role || Role.CUSTOMER; // fixed Role typing
     const savedUser = await this.userRepository.save(user);
 
     const accessToken = this.generateAccessToken(savedUser);
@@ -45,9 +44,7 @@ export class AuthService {
     await this.redisService.set(
       `${this.refreshTokenPrefix}${refreshToken}`,
       savedUser.id,
-      {
-        EX: this.getRefreshTokenExpiry(),
-      },
+      { EX: this.getRefreshTokenExpiry() },
     );
 
     return {
@@ -58,7 +55,7 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.userRepository.findOne({
-      where: { email: dto.email, isActive: true, deletedAt: null },
+      where: { email: dto.email, isActive: true, deletedAt: IsNull() },
     });
 
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
@@ -71,12 +68,9 @@ export class AuthService {
     await this.redisService.set(
       `${this.refreshTokenPrefix}${refreshToken}`,
       user.id,
-      {
-        EX: this.getRefreshTokenExpiry(),
-      },
+      { EX: this.getRefreshTokenExpiry() },
     );
 
-    // Blacklist old tokens (simplified - in production, track per-user tokens)
     return {
       user: this.sanitizeUser(user),
       tokens: { accessToken, refreshToken },
@@ -87,30 +81,22 @@ export class AuthService {
     const userId = await this.redisService.get(
       `${this.refreshTokenPrefix}${refreshToken}`,
     );
-    if (!userId) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+    if (!userId) throw new UnauthorizedException('Invalid refresh token');
 
     const user = await this.userRepository.findOne({
       where: { id: userId, isActive: true },
     });
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
+    if (!user) throw new BadRequestException('User not found');
 
-    // Delete old refresh token
     await this.redisService.del(`${this.refreshTokenPrefix}${refreshToken}`);
 
     const newAccessToken = this.generateAccessToken(user);
     const newRefreshToken = this.generateRefreshToken(user.id);
 
-    // Store new refresh token
     await this.redisService.set(
       `${this.refreshTokenPrefix}${newRefreshToken}`,
       user.id,
-      {
-        EX: this.getRefreshTokenExpiry(),
-      },
+      { EX: this.getRefreshTokenExpiry() },
     );
 
     return {
@@ -145,15 +131,11 @@ export class AuthService {
   private getRefreshTokenExpiry(): number {
     const expiresIn =
       this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
-
-    // if expiresIn is like "7d" or "1h"
     const unit = expiresIn.slice(-1);
     const num = parseInt(expiresIn.slice(0, -1), 10);
-
     if (unit === 'd') return num * 24 * 60 * 60;
     if (unit === 'h') return num * 60 * 60;
     if (unit === 'm') return num * 60;
-
     return parseInt(expiresIn, 10);
   }
 

@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { Product } from './products/entities/product.entity';
+import { ProductsModule } from './products/products.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { CartModule } from './cart/cart.module';
 import { OrdersModule } from './orders/orders.module';
@@ -13,7 +12,6 @@ import { PaymentsModule } from './payments/payments.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { AdminModule } from './admin/admin.module';
-import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -21,14 +19,25 @@ import { ProductsModule } from './products/products.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        ttl: configService.get<number>('THROTTLE_TTL'),
-        limit: configService.get<number>('THROTTLE_LIMIT'),
-      }),
+      useFactory: (configService: ConfigService): ThrottlerModuleOptions => {
+        const ttl = Number(configService.get('THROTTLE_TTL')) || 60;
+        const limit = Number(configService.get('THROTTLE_LIMIT')) || 10;
+
+        return {
+          throttlers: [
+            {
+              ttl,
+              limit,
+            },
+          ],
+        } as unknown as ThrottlerModuleOptions; // 'unknown' cast fixes TS strictness
+      },
     }),
+
     AuthModule,
     UsersModule,
     ProductsModule,

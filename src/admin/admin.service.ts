@@ -1,92 +1,87 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, MoreThan, LessThan } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { AuditLog } from './entities/audit-log.entity';
 import { Order } from '../orders/entities/order.entity';
-import { AnalyticsFilterDto } from './dto/analytics-filter.dto';
+import { User } from '../users/entities/user.entity';
+import { Product } from '../products/entities/product.entity';
 import { CacheService } from '../cache/cache.service';
-import { In } from 'typeorm';
-
+import { AnalyticsFilterDto } from './dto/analytics-filter.dto';
 import { RevenueReport } from './interfaces/revenue-report.dto';
 import { DashboardStats } from './interfaces/dashboard-stats.dto';
-import { Product } from 'src/products/entities/product.entity';
-import { User } from 'src/users/entities/user.entity';
+import { Role } from '@common/types/role.type';
 
 @Injectable()
 export class AdminService {
   constructor(
     @InjectRepository(Order)
-    private orderRepository: Repository<Order>,
+    private readonly orderRepository: Repository<Order>,
+
     @InjectRepository(AuditLog)
-    private auditRepository: Repository<AuditLog>,
-    private cacheService: CacheService,
+    private readonly auditRepository: Repository<AuditLog>,
+
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>,
+
     @InjectRepository(Product)
-    private productRepository: Repository<Product>,
+    private readonly productRepository: Repository<Product>,
+
+    private readonly cacheService: CacheService,
   ) {}
 
+  /** DASHBOARD STATS */
   async getDashboardStats(): Promise<DashboardStats> {
     const cacheKey = 'admin:dashboard:stats';
-
     return this.cacheService.getOrSet(
       cacheKey,
       async () => {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const [
-          { totalRevenue },
-          { totalOrders },
-          { count: totalUsers },
-          { count: totalProducts },
-          { avgOrderValue },
-          { conversionRate },
-          { count: activeSellers },
-        ] = await Promise.all([
-          this.orderRepository
-            .createQueryBuilder('order')
-            .select('SUM(order.totalAmount)', 'totalRevenue')
-            .where('order.status = :status', { status: 'COMPLETED' })
-            .getRawOne(),
+        // Raw queries for totals
+        const totalRevenueResult = await this.orderRepository
+          .createQueryBuilder('order')
+          .select('SUM(order.totalAmount)', 'totalRevenue')
+          .where('order.status = :status', { status: 'COMPLETED' })
+          .getRawOne<{ totalRevenue: string }>();
 
-          this.orderRepository.count({
-            where: { status: In(['PAID', 'COMPLETED']) },
-          }),
+        const avgOrderValueResult = await this.orderRepository
+          .createQueryBuilder('order')
+          .select('AVG(order.totalAmount)', 'avgOrderValue')
+          .where('order.status = :status', { status: 'COMPLETED' })
+          .getRawOne<{ avgOrderValue: string }>();
 
-          this.userRepository.count(),
-          this.productRepository.count({ where: { status: 'PUBLISHED' } }),
+        const totalOrders = await this.orderRepository.count({
+          where: { status: In(['PAID', 'COMPLETED']) },
+        });
 
-          this.orderRepository
-            .createQueryBuilder('order')
-            .select('AVG(order.totalAmount)', 'avgOrderValue')
-            .where('order.status = :status', { status: 'COMPLETED' })
-            .getRawOne(),
+        const totalUsers = await this.userRepository.count();
+        const totalProducts = await this.productRepository.count({
+          where: { status: 'PUBLISHED' as any }, // cast to ProductStatus
+        });
+        const activeSellers = await this.userRepository.count({
+          where: { role: Role.SELLER, isActive: true },
+        });
 
-          this.calculateConversionRate(),
-
-          this.userRepository.count({
-            where: { role: 'SELLER', isActive: true },
-          }),
-        ]);
+        const conversionRate = await this.calculateConversionRate();
 
         return {
-          totalRevenue: parseFloat(totalRevenue || '0'),
-          totalOrders: totalOrders || 0,
-          totalUsers: totalUsers || 0,
-          totalProducts: totalProducts || 0,
-          avgOrderValue: parseFloat(avgOrderValue || '0'),
-          conversionRate: parseFloat(conversionRate || '0'),
-          activeSellers: activeSellers || 0,
+          totalRevenue: parseFloat(totalRevenueResult?.totalRevenue || '0'),
+          totalOrders,
+          totalUsers,
+          totalProducts,
+          avgOrderValue: parseFloat(avgOrderValueResult?.avgOrderValue || '0'),
+          conversionRate: parseFloat(conversionRate),
+          activeSellers,
         };
       },
       { ttl: 60 },
-    ); // 1 minute cache
+    );
   }
 
+  /** REVENUE REPORT */
   async getRevenueReport(filter: AnalyticsFilterDto): Promise<RevenueReport[]> {
     const cacheKey = `admin:revenue:${JSON.stringify(filter)}`;
-
     return this.cacheService.getOrSet(
       cacheKey,
       async () => {
@@ -95,7 +90,7 @@ export class AdminService {
           : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         const endDate = filter.endDate ? new Date(filter.endDate) : new Date();
 
-        const result = await this.orderRepository
+        const rawResult = await this.orderRepository
           .createQueryBuilder('order')
           .select("DATE_TRUNC('day', order.createdAt)", 'date')
           .addSelect('SUM(order.totalAmount)', 'revenue')
@@ -107,19 +102,20 @@ export class AdminService {
           })
           .groupBy("DATE_TRUNC('day', order.createdAt)")
           .orderBy("DATE_TRUNC('day', order.createdAt)", 'DESC')
-          .getRawMany();
+          .getRawMany<{ date: string; revenue: string; orders: string }>();
 
-        return result.map((row) => ({
+        return rawResult.map((row) => ({
           date: row.date,
           revenue: parseFloat(row.revenue),
-          orders: parseInt(row.orders),
-          avgOrderValue: parseFloat(row.revenue) / parseInt(row.orders),
+          orders: parseInt(row.orders, 10),
+          avgOrderValue: parseFloat(row.revenue) / parseInt(row.orders, 10),
         }));
       },
       { ttl: 300 },
     );
   }
 
+  /** TOP PRODUCTS */
   async getTopProducts(days = 30): Promise<any[]> {
     return this.cacheService.getOrSet(
       `admin:top-products:${days}`,
@@ -129,10 +125,10 @@ export class AdminService {
 
         return this.orderRepository
           .createQueryBuilder('order')
+          .innerJoin('order.items', 'oi')
           .select('oi.productId', 'productId')
           .addSelect('SUM(oi.quantity)', 'totalQuantity')
           .addSelect('SUM(oi.quantity * oi.price)', 'totalRevenue')
-          .innerJoin('order.items', 'oi')
           .where('order.status = :status', { status: 'COMPLETED' })
           .andWhere('order.createdAt > :date', { date: dateThreshold })
           .groupBy('oi.productId')
@@ -143,23 +139,12 @@ export class AdminService {
     );
   }
 
-  async getUserActivityReport(): Promise<any> {
-    return {
-      // Daily active users
-      // Retention cohorts
-      // Registration sources
-      // Geographic distribution
-    };
-  }
-
+  /** Conversion Rate Calculation */
   private async calculateConversionRate(): Promise<string> {
-    const [{ totalVisitors }, { totalOrders }] = await Promise.all([
-      // Would come from analytics tracking
-      Promise.resolve({ totalVisitors: 10000 }),
-      this.orderRepository.count({
-        where: { status: In(['PAID', 'COMPLETED']) },
-      }),
-    ]);
+    const totalVisitors = 10000; // mock, replace with real analytics
+    const totalOrders = await this.orderRepository.count({
+      where: { status: In(['PAID', 'COMPLETED']) },
+    });
 
     return ((totalOrders / totalVisitors) * 100).toFixed(2);
   }

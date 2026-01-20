@@ -22,7 +22,11 @@ export class RedisService implements OnModuleInit {
     return this.redis.get(key);
   }
 
-  async set(key: string, value: string, options?: { EX?: number }): Promise<void> {
+  async set(
+    key: string,
+    value: string,
+    options?: { EX?: number },
+  ): Promise<void> {
     if (options?.EX) {
       await this.redis.setex(key, options.EX, value);
     } else {
@@ -32,5 +36,9 @@ export class RedisService implements OnModuleInit {
 
   async del(key: string): Promise<void> {
     await this.redis.del(key);
+  }
+
+  getClient(): Redis {
+    return this.redis;
   }
 }

@@ -10,7 +10,8 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { CartService } from './cart.service';
-import { AddCartItemDto, UpdateCartItemDto } from './dto';
+import { AddCartItemDto } from './dto/add-cart-item.dto';
+import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { CurrentUser } from '@auth/decorators/current-user.decorator';
 

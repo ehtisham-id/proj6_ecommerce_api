@@ -13,7 +13,7 @@ import { CreateCouponDto } from './dto/create-coupon.dto';
 import { ApplyCouponDto } from './dto/apply-coupon.dto';
 import { DiscountType } from '@common/enums/discount-type.enum';
 
-interface CouponValidationResult {
+export interface CouponValidationResult {
   valid: boolean;
   discountAmount: number;
   message?: string;

@@ -4,7 +4,15 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, Like, IsNull } from 'typeorm';
+import {
+  Repository,
+  FindOptionsWhere,
+  Like,
+  IsNull,
+  Between,
+  MoreThanOrEqual,
+  LessThanOrEqual,
+} from 'typeorm';
 
 import { Product, ProductStatus } from './entities/product.entity';
 import { ProductImage } from './entities/product-image.entity';
@@ -26,19 +34,20 @@ export class ProductsService {
     private readonly categoriesService: CategoriesService,
   ) {}
 
-  async create(
-    createProductDto: CreateProductDto,
-    sellerId: string,
-  ): Promise<Product> {
-    await this.categoriesService.findOne(createProductDto.categoryId);
+  /* ===================== CREATE ===================== */
+
+  async create(dto: CreateProductDto, sellerId: string): Promise<Product> {
+    await this.categoriesService.findOne(dto.categoryId);
 
     const product = this.productRepository.create({
-      ...createProductDto,
+      ...dto,
       sellerId,
     });
 
     return this.productRepository.save(product);
   }
+
+  /* ===================== FIND ALL ===================== */
 
   async findAll(query: QueryProductDto): Promise<{
     products: Product[];
@@ -61,6 +70,7 @@ export class ProductsService {
     const where: FindOptionsWhere<Product> = {
       isActive: true,
       deletedAt: IsNull(),
+      status: status ?? ProductStatus.PUBLISHED,
     };
 
     if (search) {
@@ -71,20 +81,12 @@ export class ProductsService {
       where.categoryId = categoryId;
     }
 
-    if (status) {
-      where.status = status;
-    } else {
-      where.status = ProductStatus.PUBLISHED;
-    }
-
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      where.price = {};
-      if (minPrice !== undefined) {
-        (where.price as any).gte = minPrice;
-      }
-      if (maxPrice !== undefined) {
-        (where.price as any).lte = maxPrice;
-      }
+    if (minPrice !== undefined && maxPrice !== undefined) {
+      where.price = Between(minPrice, maxPrice);
+    } else if (minPrice !== undefined) {
+      where.price = MoreThanOrEqual(minPrice);
+    } else if (maxPrice !== undefined) {
+      where.price = LessThanOrEqual(maxPrice);
     }
 
     const [products, total] = await this.productRepository.findAndCount({
@@ -103,9 +105,15 @@ export class ProductsService {
     };
   }
 
+  /* ===================== FIND ONE ===================== */
+
   async findOne(id: string): Promise<Product> {
     const product = await this.productRepository.findOne({
-      where: { id, isActive: true, deletedAt: null },
+      where: {
+        id,
+        isActive: true,
+        deletedAt: IsNull(),
+      },
       relations: ['seller', 'category', 'images'],
     });
 
@@ -115,6 +123,8 @@ export class ProductsService {
 
     return product;
   }
+
+  /* ===================== UPDATE ===================== */
 
   async update(
     id: string,
@@ -135,6 +145,8 @@ export class ProductsService {
     return this.productRepository.save(product);
   }
 
+  /* ===================== DELETE ===================== */
+
   async remove(id: string, sellerId: string): Promise<void> {
     const product = await this.findOne(id);
 
@@ -144,6 +156,8 @@ export class ProductsService {
 
     await this.productRepository.softDelete(id);
   }
+
+  /* ===================== IMAGES ===================== */
 
   async addImage(
     productId: string,
@@ -157,7 +171,9 @@ export class ProductsService {
     }
 
     const sortOrder =
-      (await this.imageRepository.count({ where: { productId } })) + 1;
+      (await this.imageRepository.count({
+        where: { productId },
+      })) + 1;
 
     const image = this.imageRepository.create({
       url: imageUrl,

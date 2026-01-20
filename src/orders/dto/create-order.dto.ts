@@ -1,8 +1,16 @@
-import { IsUUID, IsInt, IsPositive, IsDecimal, Min, ValidateNested } from 'class-validator';
+import {
+  IsUUID,
+  IsInt,
+  IsPositive,
+  IsDecimal,
+  Min,
+  ValidateNested,
+  IsOptional,
+  ArrayMinSize,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsUUIDArray } from '@common/decorators/is-uuid-array.decorator';
 
-class OrderItemDto {
+export class OrderItemDto {
   @IsUUID()
   productId!: string;
 
@@ -15,14 +23,16 @@ class OrderItemDto {
 export class CreateOrderDto {
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)
-  @IsUUIDArray(item => item.productId)
+  @ArrayMinSize(1)
   items!: OrderItemDto[];
 
+  @IsOptional()
   @IsDecimal()
   @Min(0)
   @Type(() => Number)
   shippingAmount?: number;
 
+  @IsOptional()
   @IsDecimal()
   @Min(0)
   @Type(() => Number)

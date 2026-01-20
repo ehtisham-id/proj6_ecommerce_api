@@ -5,7 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, IsNull } from 'typeorm';
 
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
@@ -33,14 +33,8 @@ export class OrdersService {
     private readonly productsService: ProductsService,
   ) {}
 
-  /**
-   * CREATE ORDER
-   * -------------------------------------------------------
-   * 🔴 EXTENSION POINT:
-   * - Coupons
-   * - Shipping calculation
-   * - Payment intent creation
-   */
+  /* ===================== CREATE ORDER ===================== */
+
   async createOrder(userId: string, dto: CreateOrderDto): Promise<Order> {
     return this.dataSource.transaction(async (manager) => {
       const cart = await this.cartService.getCart(userId);
@@ -55,11 +49,8 @@ export class OrdersService {
       for (const cartItem of cart.items) {
         const product = await this.productsService.findOne(cartItem.productId);
 
-        if (!product) {
-          throw new NotFoundException('Product not found');
-        }
-
-        await this.inventoryService.reserveStock(product.id, cartItem.quantity);
+        // reserve inventory
+        await this.inventoryService.reserve(product.id, cartItem.quantity);
 
         totalAmount += cartItem.quantity * cartItem.priceAtAdd;
 
@@ -72,13 +63,12 @@ export class OrdersService {
         );
       }
 
-      // 🔴 FUTURE: coupon / discount calculation here
       const discountAmount = 0;
-
-      // 🔴 FUTURE: shipping calculation here
       const shippingAmount = dto.shippingAmount ?? 0;
+      const taxAmount = dto.taxAmount ?? 0;
 
-      const finalAmount = totalAmount - discountAmount + shippingAmount;
+      const finalAmount =
+        totalAmount - discountAmount + shippingAmount + taxAmount;
 
       const order = manager.getRepository(Order).create({
         userId,
@@ -86,6 +76,7 @@ export class OrdersService {
         totalAmount: finalAmount,
         discountAmount,
         shippingAmount,
+        taxAmount,
         items: orderItems,
       });
 
@@ -97,21 +88,37 @@ export class OrdersService {
     });
   }
 
+  /* ===================== FIND ALL ===================== */
+
   async findAll(userId: string, page = 1, limit = 20) {
     const [orders, total] = await this.orderRepository.findAndCount({
-      where: { userId, deletedAt: null },
+      where: {
+        userId,
+        deletedAt: IsNull(),
+      },
       relations: ['items', 'items.product'],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
     });
 
-    return { orders, total, page, limit };
+    return {
+      orders,
+      total,
+      page,
+      limit,
+    };
   }
+
+  /* ===================== FIND ONE ===================== */
 
   async findOne(orderId: string, userId: string): Promise<Order> {
     const order = await this.orderRepository.findOne({
-      where: { id: orderId, userId, deletedAt: null },
+      where: {
+        id: orderId,
+        userId,
+        deletedAt: IsNull(),
+      },
       relations: ['items', 'items.product'],
     });
 
@@ -122,11 +129,8 @@ export class OrdersService {
     return order;
   }
 
-  /**
-   * UPDATE ORDER STATUS
-   * -------------------------------------------------------
-   * Handles inventory rollback on cancellation
-   */
+  /* ===================== UPDATE STATUS ===================== */
+
   async updateStatus(
     orderId: string,
     dto: UpdateOrderStatusDto,
@@ -134,7 +138,10 @@ export class OrdersService {
   ): Promise<Order> {
     return this.dataSource.transaction(async (manager) => {
       const order = await manager.getRepository(Order).findOne({
-        where: { id: orderId, deletedAt: null },
+        where: {
+          id: orderId,
+          deletedAt: IsNull(),
+        },
         relations: ['items'],
         lock: { mode: 'pessimistic_write' },
       });
@@ -177,9 +184,8 @@ export class OrdersService {
     });
   }
 
-  /**
-   * USER ORDER STATS
-   */
+  /* ===================== USER STATS ===================== */
+
   async getUserOrdersStats(userId: string) {
     return this.orderRepository
       .createQueryBuilder('order')

@@ -8,7 +8,6 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from '@common/filters/http-exception.filter';
 import helmet from 'fastify-helmet';
-import fastifySecureSession from 'fastify-secure-session';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -30,15 +29,6 @@ async function bootstrap() {
 
   // Global exception filter
   app.useGlobalFilters(new HttpExceptionFilter());
-
-  // app.useGlobalInterceptors(
-  //   new CacheInterceptor(reflector, cacheService),
-  //   new PerformanceInterceptor(),
-  //   new CompressionInterceptor(),
-  // );
-
-  // // Global cache invalidation pipe
-  // app.useGlobalPipes(new CacheInvalidationPipe());
 
   // API Versioning
   app.enableVersioning({
@@ -64,8 +54,10 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Rate limiting configured in AppModule
-  await app.listen(configService.get('PORT') || 3000, '0.0.0.0');
+  // Ensure PORT is a number
+  const port = Number(configService.get('PORT')) || 3000;
+
+  await app.listen(port, '0.0.0.0');
   console.log(`🚀 Application is running on: ${await app.getUrl()}/api/v1`);
 }
 

@@ -10,16 +10,17 @@ import Redis from 'ioredis';
 
 import { ProductsService } from '../products/products.service';
 import { Cart } from './entities/cart.entity';
-import { AddCartItemDto, UpdateCartItemDto } from './dto';
+import { AddCartItemDto } from './dto/add-cart-item.dto';
+import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 
-interface CartItem {
+export interface CartItem {
   productId: string;
   quantity: number;
   priceAtAdd: number;
   addedAt: string;
 }
 
-interface CartCache {
+export interface CartCache {
   items: CartItem[];
   totals: {
     quantity: number;

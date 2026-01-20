@@ -8,6 +8,8 @@ import { Reflector } from '@nestjs/core';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { CacheService, CacheOptions } from '../cache.service';
+import { v4 as uuidv4 } from 'uuid';
+
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {

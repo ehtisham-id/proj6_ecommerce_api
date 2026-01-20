@@ -174,7 +174,7 @@ export class InventoryService {
       productId,
       {
         quantity: -quantity,
-        type: InventoryTransactionType.COMMIT_RESERVATION,
+        type: InventoryTransactionType.COMMIT,
         reference: orderId,
       },
       userId,
@@ -209,5 +209,14 @@ export class InventoryService {
       relations: ['product'],
       order: { availableQuantity: 'ASC' },
     });
+  }
+
+  async reserve(
+    productId: string,
+    quantity: number,
+    orderId?: string,
+    userId?: string,
+  ): Promise<Inventory> {
+    return this.reserveInventory(productId, quantity, orderId ?? ' ', userId?? ' ');
   }
 }
