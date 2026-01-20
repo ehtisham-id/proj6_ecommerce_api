@@ -37,7 +37,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: Role,
-    default: 'user',
+    default: Role.USER,
   })
   @IsEnum(Role)
   role!: Role;
