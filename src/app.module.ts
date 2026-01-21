@@ -49,9 +49,15 @@ import { AppService } from './app.service';
         port: Number(configService.get<string>('DB_PORT')),
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'], 
-        synchronize: true, 
+        database:
+          configService.get<string>('DB_DATABASE') ||
+          configService.get<string>('DB_NAME'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        // Control synchronize via env var `DB_SYNCHRONIZE` (default false)
+        synchronize:
+          String(
+            configService.get('DB_SYNCHRONIZE') ?? 'false',
+          ).toLowerCase() === 'true',
       }),
     }),
 
