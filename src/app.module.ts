@@ -12,6 +12,8 @@ import { PaymentsModule } from './payments/payments.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { AdminModule } from './admin/admin.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -64,5 +66,7 @@ import { AdminModule } from './admin/admin.module';
     CouponsModule,
     AdminModule,
   ],
+  providers: [AppService],
+  controllers: [AppController],
 })
 export class AppModule {}

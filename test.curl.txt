@@ -1,0 +1,180 @@
+
+# Base
+export BASE_URL="http://localhost:3000/api/v1"
+# Replace these as you get tokens from login responses
+export TOKEN="<USER_JWT>"
+export REFRESH_TOKEN="<REFRESH_TOKEN>"
+export ADMIN_TOKEN="<ADMIN_JWT>"
+export SELLER_TOKEN="<SELLER_JWT>"
+
+# HEALTH
+curl -sS "$BASE_URL/health"
+
+# AUTH: Register (valid)
+curl -sS -X POST "$BASE_URL/auth/register" -H "Content-Type: application/json" -d '{"email":"test@example.com","firstName":"John","lastName":"Doe","password":"password123"}'
+
+# AUTH: Register (invalid - short password)
+curl -sS -X POST "$BASE_URL/auth/register" -H "Content-Type: application/json" -d '{"email":"bad@example","firstName":"J","lastName":"D","password":"short"}'
+
+# AUTH: Login (valid)
+curl -sS -X POST "$BASE_URL/auth/login" -H "Content-Type: application/json" -d '{"email":"test@example.com","password":"password123"}'
+
+# AUTH: Login (invalid credentials)
+curl -sS -X POST "$BASE_URL/auth/login" -H "Content-Type: application/json" -d '{"email":"test@example.com","password":"wrongpass"}'
+
+# AUTH: Refresh token (valid)
+curl -sS -X POST "$BASE_URL/auth/refresh" -H "Content-Type: application/json" -d '{"refreshToken": "'$REFRESH_TOKEN'"}'
+
+# AUTH: Logout (valid)
+curl -sS -X POST "$BASE_URL/auth/logout" -H "Authorization: Bearer $TOKEN"
+
+
+# USERS (admin-protected)
+# Create user (valid, admin)
+curl -sS -X POST "$BASE_URL/users" -H "Content-Type: application/json" -H "Authorization: Bearer $ADMIN_TOKEN" -d '{"email":"newuser@example.com","firstName":"New","lastName":"User","password":"password123"}'
+
+# Create user (forbidden - non-admin)
+curl -sS -X POST "$BASE_URL/users" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"email":"newuser2@example.com","firstName":"New","lastName":"User","password":"password123"}'
+
+# Get all users (admin)
+curl -sS "$BASE_URL/users?page=1&limit=5" -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# Get user by id (invalid UUID)
+curl -sS "$BASE_URL/users/not-a-uuid" -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# Update user (self) (valid)
+curl -sS -X PATCH "$BASE_URL/users/me" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"firstName":"Updated"}'
+
+# Update user (admin update other user) (valid)
+curl -sS -X PUT "$BASE_URL/users/<USER_ID>" -H "Content-Type: application/json" -H "Authorization: Bearer $ADMIN_TOKEN" -d '{"firstName":"AdminChanged"}'
+
+# Update role (forbidden for non-admin)
+curl -sS -X PATCH "$BASE_URL/users/<USER_ID>/role" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"role":"ADMIN"}'
+
+# Delete user (admin)
+curl -sS -X DELETE "$BASE_URL/users/<USER_ID>" -H "Authorization: Bearer $ADMIN_TOKEN"
+
+
+# PRODUCTS
+# Create product (valid - seller or admin)
+curl -sS -X POST "$BASE_URL/products" -H "Content-Type: application/json" -H "Authorization: Bearer $SELLER_TOKEN" -d '{"name":"Test Product","description":"Nice product","price":19.99,"stockQuantity":100,"categoryId":"00000000-0000-0000-0000-000000000000"}'
+
+# Create product (invalid - missing fields)
+curl -sS -X POST "$BASE_URL/products" -H "Content-Type: application/json" -H "Authorization: Bearer $SELLER_TOKEN" -d '{"name":"X","price":-5}'
+
+# List products (public)
+curl -sS "$BASE_URL/products?limit=10&page=1"
+
+# Get product (valid)
+curl -sS "$BASE_URL/products/<PRODUCT_ID>"
+
+# Get product (invalid UUID)
+curl -sS "$BASE_URL/products/not-a-uuid"
+
+# Update product (forbidden if not owner)
+curl -sS -X PUT "$BASE_URL/products/<PRODUCT_ID>" -H "Content-Type: application/json" -H "Authorization: Bearer $SELLER_TOKEN" -d '{"price":29.99}'
+
+# Delete product (seller/admin)
+curl -sS -X DELETE "$BASE_URL/products/<PRODUCT_ID>" -H "Authorization: Bearer $SELLER_TOKEN"
+
+# Add product image (valid)
+curl -sS -X POST "$BASE_URL/products/<PRODUCT_ID>/images" -H "Content-Type: application/json" -H "Authorization: Bearer $SELLER_TOKEN" -d '{"url":"https://example.com/image.jpg"}'
+
+# Remove product image (invalid imageId)
+curl -sS -X DELETE "$BASE_URL/products/<PRODUCT_ID>/images/not-a-uuid" -H "Authorization: Bearer $SELLER_TOKEN"
+
+
+# CART (requires auth)
+# Get cart
+curl -sS "$BASE_URL/cart" -H "Authorization: Bearer $TOKEN"
+
+# Add item (valid)
+curl -sS -X POST "$BASE_URL/cart/items" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"productId":"<PRODUCT_ID>","quantity":2}'
+
+# Add item (invalid quantity)
+curl -sS -X POST "$BASE_URL/cart/items" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"productId":"<PRODUCT_ID>","quantity":0}'
+
+# Update item (valid)
+curl -sS -X PUT "$BASE_URL/cart/items/<PRODUCT_ID>" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"quantity":3}'
+
+# Remove item
+curl -sS -X DELETE "$BASE_URL/cart/items/<PRODUCT_ID>" -H "Authorization: Bearer $TOKEN"
+
+# Clear cart
+curl -sS -X DELETE "$BASE_URL/cart" -H "Authorization: Bearer $TOKEN"
+
+
+# ORDERS
+# Create order (valid)
+curl -sS -X POST "$BASE_URL/orders" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"items":[{"productId":"<PRODUCT_ID>","quantity":1}]}'
+
+# Create order (invalid - empty items)
+curl -sS -X POST "$BASE_URL/orders" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"items":[]}'
+
+# Get orders (user)
+curl -sS "$BASE_URL/orders" -H "Authorization: Bearer $TOKEN"
+
+# Get order by id (invalid UUID)
+curl -sS "$BASE_URL/orders/not-a-uuid" -H "Authorization: Bearer $TOKEN"
+
+# Update order status (admin/seller)
+curl -sS -X PATCH "$BASE_URL/orders/<ORDER_ID>/status" -H "Content-Type: application/json" -H "Authorization: Bearer $ADMIN_TOKEN" -d '{"status":"SHIPPED"}'
+
+
+# PAYMENTS
+# Create payment intent (valid)
+curl -sS -X POST "$BASE_URL/payments/intent" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"orderId":"<ORDER_ID>","amount":19.99}'
+
+# Confirm payment (valid)
+curl -sS -X POST "$BASE_URL/payments/confirm" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"paymentIntentId":"pi_12345","orderId":"<ORDER_ID>"}'
+
+# Webhook (public)
+curl -sS -X POST "$BASE_URL/payments/webhook" -H "Content-Type: application/json" -d '{"type":"payment_intent.succeeded","data":{}}'
+
+
+# INVENTORY
+# Get inventory (seller/admin)
+curl -sS "$BASE_URL/inventory/<PRODUCT_ID>" -H "Authorization: Bearer $SELLER_TOKEN"
+
+# Adjust inventory (valid)
+curl -sS -X PATCH "$BASE_URL/inventory/<PRODUCT_ID>/adjust" -H "Content-Type: application/json" -H "Authorization: Bearer $SELLER_TOKEN" -d '{"quantity":10,"type":"ADJUSTMENT","reference":"restock-001"}'
+
+# Adjust inventory (invalid - missing quantity)
+curl -sS -X PATCH "$BASE_URL/inventory/<PRODUCT_ID>/adjust" -H "Content-Type: application/json" -H "Authorization: Bearer $SELLER_TOKEN" -d '{"type":"ADJUSTMENT"}'
+
+
+# COUPONS
+# Create coupon (admin)
+curl -sS -X POST "$BASE_URL/coupons" -H "Content-Type: application/json" -H "Authorization: Bearer $ADMIN_TOKEN" -d '{"code":"SAVE10","discount":10,"expiresAt":"2026-12-31T23:59:59Z"}'
+
+# List coupons (public)
+curl -sS "$BASE_URL/coupons"
+
+# Apply coupon (valid)
+curl -sS -X POST "$BASE_URL/coupons/apply" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"code":"SAVE10","orderAmount":100.00}'
+
+# Apply coupon (invalid code)
+curl -sS -X POST "$BASE_URL/coupons/apply" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"code":"BAD","orderAmount":100.00}'
+
+# Delete coupon (admin)
+curl -sS -X DELETE "$BASE_URL/coupons/<COUPON_ID>" -H "Authorization: Bearer $ADMIN_TOKEN"
+
+
+# REVIEWS
+# Create review (valid)
+curl -sS -X POST "$BASE_URL/reviews" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"productId":"<PRODUCT_ID>","rating":5,"comment":"Excellent product, highly recommended!"}'
+
+# Create review (invalid - short comment)
+curl -sS -X POST "$BASE_URL/reviews" -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"productId":"<PRODUCT_ID>","rating":5,"comment":"Bad"}'
+
+# List reviews (query)
+curl -sS "$BASE_URL/reviews?limit=10&page=1"
+
+# List product reviews
+curl -sS "$BASE_URL/reviews/product/<PRODUCT_ID>?limit=5"
+
+# Delete review (own review)
+curl -sS -X DELETE "$BASE_URL/reviews/<REVIEW_ID>" -H "Authorization: Bearer $TOKEN"
+
+# Approve review (admin)
+curl -sS -X PATCH "$BASE_URL/reviews/<REVIEW_ID>/approve" -H "Content-Type: application/json" -H "Authorization: Bearer $ADMIN_TOKEN" -d '{"reason":"Looks good"}'

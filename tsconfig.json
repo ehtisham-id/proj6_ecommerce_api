@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "target": "ES2021",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
@@ -21,10 +23,18 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@common/*": ["src/common/*"],
-      "@config/*": ["src/config/*"],
-      "@database/*": ["src/database/*"],
-      "@auth/*": ["src/auth/*"]
+      "@common/*": [
+        "src/common/*"
+      ],
+      "@config/*": [
+        "src/config/*"
+      ],
+      "@database/*": [
+        "src/database/*"
+      ],
+      "@auth/*": [
+        "src/auth/*"
+      ]
     }
   }
 }
