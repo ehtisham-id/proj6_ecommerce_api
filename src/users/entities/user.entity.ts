@@ -19,7 +19,7 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ nullable: false })
   @IsEmail()
   email!: string;
 
@@ -46,7 +46,7 @@ export class User {
   isActive!: boolean;
 
   @CreateDateColumn()
-  createdAt!: Date ;
+  createdAt!: Date;
 
   @UpdateDateColumn()
   updatedAt!: Date;
@@ -54,7 +54,7 @@ export class User {
   @DeleteDateColumn()
   deletedAt?: Date;
 
-   @BeforeInsert()
+  @BeforeInsert()
   async hashPassword() {
     if (this.password) {
       const bcrypt = await import('bcryptjs');
