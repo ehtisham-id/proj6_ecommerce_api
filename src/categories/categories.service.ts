@@ -23,21 +23,18 @@ export class CategoriesService {
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find({
       where: { isActive: true, deletedAt: IsNull() },
-      relations: ['children'],
       order: { name: 'ASC' },
     });
   }
 
   async findTree(): Promise<Category[]> {
-    const treeRepo = this
-      .categoryRepository as unknown as import('typeorm').TreeRepository<Category>;
-    return treeRepo.findTrees();
+    // Flattened category list; tree structure removed.
+    return this.findAll();
   }
 
   async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: { id, isActive: true, deletedAt: IsNull() },
-      relations: ['children'],
     });
     if (!category) throw new NotFoundException('Category not found');
     return category;

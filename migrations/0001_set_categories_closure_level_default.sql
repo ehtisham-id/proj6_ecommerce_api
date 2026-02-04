@@ -1,0 +1,2 @@
+-- Migration removed: user requested no DB migrations for categories (use flat categories)
+-- This file intentionally left blank.

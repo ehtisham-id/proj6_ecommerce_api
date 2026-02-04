@@ -1,8 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Tree, TreeChildren, TreeParent, TreeLevelColumn, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Index } from 'typeorm';
 import { IsString, Length, IsBoolean, IsOptional } from 'class-validator';
 
 @Entity('categories')
-@Tree('closure-table')
 @Index('idx_categories_name', ['name'])
 export class Category {
   @PrimaryGeneratedColumn('uuid')
@@ -17,21 +16,15 @@ export class Category {
   @IsString()
   description?: string;
 
+  @Column({ length: 100, unique: true })
+  @IsString()
+  @Length(3, 100)
+  slug!: string;
+
   @Column({ default: true })
   @IsBoolean()
   isActive!: boolean;
 
-  @Column({ nullable: true })
-  parentId?: string;
-
-  @TreeChildren()
-  children!: Category[];
-
-  @TreeParent()
-  parent!: Category;
-
-  @TreeLevelColumn()
-  level!: number;
 
   @CreateDateColumn()
   createdAt!: Date;

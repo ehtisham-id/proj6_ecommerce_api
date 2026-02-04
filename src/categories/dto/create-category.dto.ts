@@ -7,6 +7,11 @@ export class CreateCategoryDto {
   name!: string;
 
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  slug!: string;
+
+  @IsString()
   @IsOptional()
   @MaxLength(255)
   description?: string;

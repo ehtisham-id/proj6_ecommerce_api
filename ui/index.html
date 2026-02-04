@@ -1264,6 +1264,7 @@
 
                 let products = [];
                 if (Array.isArray(data)) products = data;
+                else if (Array.isArray(data.products)) products = data.products;
                 else if (Array.isArray(data.data)) products = data.data;
                 else if (Array.isArray(data.items)) products = data.items;
                 else if (data && data.data && Array.isArray(data.data.items)) products = data.data.items;
@@ -1292,6 +1293,7 @@
 
                 let products = [];
                 if (Array.isArray(data)) products = data;
+                else if (Array.isArray(data.products)) products = data.products;
                 else if (Array.isArray(data.data)) products = data.data;
                 else if (Array.isArray(data.items)) products = data.items;
                 else if (data && data.data && Array.isArray(data.data.items)) products = data.data.items;
@@ -2027,19 +2029,22 @@
 
         async function loadSellerStats() {
             try {
-                const response = await fetch(`${API_BASE}/seller/analytics`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+                // No dedicated seller analytics endpoint available; compute lightweight stats client-side
+                const response = await apiFetch(`${API_BASE}/products?limit=1000`);
+                if (!response.ok) return;
+                const raw = await response.json();
+                const all = extractArray(raw);
+                const mine = all.filter(p => p.seller && p.seller.id === currentUser?.id);
 
-                if (response.ok) {
-                    const stats = await response.json();
-                    document.getElementById('sellerTotalProducts').textContent = stats.totalProducts || 0;
-                    document.getElementById('sellerTotalRevenue').textContent = `$${(stats.totalRevenue || 0).toFixed(2)}`;
-                    document.getElementById('sellerTotalOrders').textContent = stats.totalOrders || 0;
-                    document.getElementById('sellerAvgRating').textContent = (stats.averageRating || 0).toFixed(1);
-                }
+                const totalProducts = mine.length;
+                const totalRevenue = mine.reduce((sum, p) => sum + ((p.price || 0) * (p.soldQuantity || 0)), 0);
+                const totalOrders = 0; // require orders endpoint aggregation; leave 0 for now
+                const avgRating = 0; // require reviews aggregation; leave 0 for now
+
+                document.getElementById('sellerTotalProducts').textContent = totalProducts || 0;
+                document.getElementById('sellerTotalRevenue').textContent = `$${(totalRevenue || 0).toFixed(2)}`;
+                document.getElementById('sellerTotalOrders').textContent = totalOrders || 0;
+                document.getElementById('sellerAvgRating').textContent = (avgRating || 0).toFixed(1);
             } catch (error) {
                 console.error('Error loading seller stats:', error);
             }
@@ -2047,17 +2052,11 @@
 
         async function loadSellerProducts() {
             try {
-                const response = await fetch(`${API_BASE}/seller/products`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (response.ok) {
-                    const productsRaw = await response.json();
-                    const products = extractArray(productsRaw);
-                    displaySellerProducts(products);
-                }
+                const response = await apiFetch(`${API_BASE}/products?limit=1000`);
+                if (!response.ok) return;
+                const productsRaw = await response.json();
+                const products = extractArray(productsRaw).filter(p => p.seller && p.seller.id === currentUser?.id);
+                displaySellerProducts(products);
             } catch (error) {
                 console.error('Error loading products:', error);
             }
@@ -2166,20 +2165,46 @@
 
             try {
                 const url = productId ?
-                    `${API_BASE}/seller/products/${productId}` :
-                    `${API_BASE}/seller/products`;
+                    `${API_BASE}/products/${productId}` :
+                    `${API_BASE}/products`;
                 const method = productId ? 'PUT' : 'POST';
 
-                const response = await fetch(url, {
+                // Only send fields defined in CreateProductDto / UpdateProductDto
+                const payload = {
+                    name: data.name,
+                    description: data.description,
+                    price: data.price,
+                    stockQuantity: data.stockQuantity,
+                    sku: data.sku,
+                    categoryId: data.categoryId,
+                    status: data.status
+                };
+
+                const response = await apiFetch(url, {
                     method,
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
+                    const saved = await response.json();
+
+                    // If images provided, upload via product images endpoint
+                    if (images && images.length > 0) {
+                        const pid = productId || saved.id;
+                        for (const img of images) {
+                            try {
+                                await apiFetch(`${API_BASE}/products/${pid}/images`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ url: img })
+                                });
+                            } catch (e) {
+                                console.error('Failed to add image', img, e);
+                            }
+                        }
+                    }
+
                     bootstrap.Modal.getInstance(document.getElementById('productFormModal')).hide();
                     showNotification(productId ? 'Product updated!' : 'Product created!', 'success');
                     await loadSellerProducts();
@@ -2199,11 +2224,8 @@
             if (!confirm('Are you sure you want to delete this product?')) return;
 
             try {
-                const response = await fetch(`${API_BASE}/seller/products/${productId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
+                const response = await apiFetch(`${API_BASE}/products/${productId}`, {
+                    method: 'DELETE'
                 });
 
                 if (response.ok) {
