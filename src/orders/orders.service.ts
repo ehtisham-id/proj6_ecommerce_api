@@ -110,6 +110,26 @@ export class OrdersService {
     };
   }
 
+  /** ADMIN: list all orders (no user filter) */
+  async findAllAdmin(page = 1, limit = 20) {
+    const [orders, total] = await this.orderRepository.findAndCount({
+      where: {
+        deletedAt: IsNull(),
+      },
+      relations: ['items', 'items.product'],
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return {
+      orders,
+      total,
+      page,
+      limit,
+    };
+  }
+
   /* ===================== FIND ONE ===================== */
 
   async findOne(orderId: string, userId: string): Promise<Order> {

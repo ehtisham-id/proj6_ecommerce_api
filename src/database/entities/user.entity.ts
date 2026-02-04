@@ -1,17 +1,31 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, BeforeInsert, Index } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+  BeforeInsert,
+  Index,
+} from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { IsEmail, MinLength, IsEnum } from 'class-validator';
+
 import { Role } from '@common/types/role.type';
 
 @Entity('users')
-@Index('idx_users_email', ['email'], { unique: true })
+@Index(['email'], { unique: true, where: `"email" IS NOT NULL` })
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ length: 100 })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   @IsEmail()
-  email!: string;
+  email!: string | null;
 
   @Column({ length: 50 })
   @MinLength(3)
@@ -23,10 +37,11 @@ export class User {
   @Column()
   @Exclude()
   password!: string;
+
   @Column({
     type: 'enum',
     enum: Role,
-    default: Role.CUSTOMER,
+    default: Role.USER,
   })
   @IsEnum(Role)
   role!: Role;

@@ -1261,7 +1261,15 @@
             try {
                 const response = await fetch(`${API_BASE}/products?limit=8&status=PUBLISHED`);
                 const data = await response.json();
-                const products = data.data || data;
+
+                let products = [];
+                if (Array.isArray(data)) products = data;
+                else if (Array.isArray(data.data)) products = data.data;
+                else if (Array.isArray(data.items)) products = data.items;
+                else if (data && data.data && Array.isArray(data.data.items)) products = data.data.items;
+                else {
+                    console.warn('Unexpected products response shape, expected array:', data);
+                }
 
                 const html = products.map(product => createProductCard(product)).join('');
                 document.getElementById('featuredProducts').innerHTML = html;
@@ -1282,7 +1290,15 @@
                 const response = await fetch(`${API_BASE}/products?${params}`);
                 const data = await response.json();
 
-                const products = data.data || data;
+                let products = [];
+                if (Array.isArray(data)) products = data;
+                else if (Array.isArray(data.data)) products = data.data;
+                else if (Array.isArray(data.items)) products = data.items;
+                else if (data && data.data && Array.isArray(data.data.items)) products = data.data.items;
+                else {
+                    console.warn('Unexpected products response shape, expected array:', data);
+                }
+
                 const total = data.total || products.length;
 
                 const html = products.map(product => createProductCard(product)).join('');
@@ -1916,6 +1932,30 @@
             }, 3000);
         }
 
+        // Helper: normalize API responses that may wrap arrays under different keys
+        function extractArray(raw) {
+            if (!raw) return [];
+            if (Array.isArray(raw)) return raw;
+            if (Array.isArray(raw.data)) return raw.data;
+            if (Array.isArray(raw.items)) return raw.items;
+            if (Array.isArray(raw.users)) return raw.users;
+            if (Array.isArray(raw.products)) return raw.products;
+            if (Array.isArray(raw.orders)) return raw.orders;
+            if (raw.data && Array.isArray(raw.data.items)) return raw.data.items;
+            console.warn('Unexpected response shape, expected array-like:', raw);
+            return [];
+        }
+
+        // Lightweight fetch wrapper that injects Authorization header when available
+        async function apiFetch(url, options = {}) {
+            const headers = Object.assign({}, options.headers || {});
+            const token = localStorage.getItem('token');
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const opts = Object.assign({}, options, { headers });
+            return fetch(url, opts);
+        }
+
         function showLoading(textId, spinnerId) {
             document.getElementById(textId).style.display = 'none';
             document.getElementById(spinnerId).style.display = 'inline-block';
@@ -2014,8 +2054,9 @@
                 });
 
                 if (response.ok) {
-                    const products = await response.json();
-                    displaySellerProducts(products.data || products);
+                    const productsRaw = await response.json();
+                    const products = extractArray(productsRaw);
+                    displaySellerProducts(products);
                 }
             } catch (error) {
                 console.error('Error loading products:', error);
@@ -2056,7 +2097,9 @@
         async function loadCategoriesForForm() {
             try {
                 const response = await fetch(`${API_BASE}/categories`);
-                const categories = await response.json();
+                const categoriesRaw = await response.json();
+
+                const categories = extractArray(categoriesRaw);
 
                 const options = categories.map(cat =>
                     `<option value="${cat.id}">${cat.name}</option>`
@@ -2249,12 +2292,9 @@
             };
 
             try {
-                const response = await fetch(`${API_BASE}/categories`, {
+                const response = await apiFetch(`${API_BASE}/categories`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
@@ -2276,11 +2316,8 @@
             if (!confirm('Delete this category? Products in this category will need reassignment.')) return;
 
             try {
-                const response = await fetch(`${API_BASE}/categories/${categoryId}`, {
+                const response = await apiFetch(`${API_BASE}/categories/${categoryId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
                 });
 
                 if (response.ok) {
@@ -2304,7 +2341,7 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    const products = data.data || data;
+                    const products = extractArray(data);
 
                     const html = products.map(product => `
                         <tr>
@@ -2365,8 +2402,9 @@
                 });
 
                 if (response.ok) {
-                    const orders = await response.json();
-                    displayAdminOrders(orders.data || orders);
+                    const ordersRaw = await response.json();
+                    const orders = extractArray(ordersRaw);
+                    displayAdminOrders(orders);
                 }
             } catch (error) {
                 console.error('Error loading orders:', error);
@@ -2658,9 +2696,11 @@
                 });
 
                 if (response.ok) {
-                    const users = await response.json();
+                    const usersRaw = await response.json();
 
-                    const html = (users.data || users).map(user => `
+                    const users = extractArray(usersRaw);
+
+                    const html = users.map(user => `
                         <tr>
                             <td>${user.firstName} ${user.lastName}</td>
                             <td>${user.email}</td>

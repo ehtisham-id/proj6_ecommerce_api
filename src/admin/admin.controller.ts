@@ -1,5 +1,6 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
+import { OrdersService } from '../orders/orders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -13,7 +14,10 @@ import { Cacheable } from '../common/decorators/cacheable.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.ADMIN)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly ordersService: OrdersService,
+  ) {}
 
   @Get('stats')
   @Cacheable({ ttl: 60 })
@@ -22,7 +26,9 @@ export class AdminController {
   }
 
   @Get('revenue')
-  getRevenueReport(@Query() filter: AnalyticsFilterDto): Promise<RevenueReport[]> {
+  getRevenueReport(
+    @Query() filter: AnalyticsFilterDto,
+  ): Promise<RevenueReport[]> {
     return this.adminService.getRevenueReport(filter);
   }
 
@@ -30,5 +36,10 @@ export class AdminController {
   @Cacheable({ ttl: 300 })
   getTopProducts(@Query('days') days = 30): Promise<any[]> {
     return this.adminService.getTopProducts(+days);
+  }
+
+  @Get('orders')
+  async getOrders(@Query('page') page = 1, @Query('limit') limit = 20) {
+    return this.ordersService.findAllAdmin(Number(page), Number(limit));
   }
 }

@@ -14,14 +14,18 @@ import { IsEmail, MinLength, IsEnum } from 'class-validator';
 import { Role } from '@common/types/role.type';
 
 @Entity('users')
-@Index(['email'], { unique: true })
+@Index(['email'], { unique: true, where: `"email" IS NOT NULL` })
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ nullable: false })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   @IsEmail()
-  email!: string;
+  email!: string | null;
 
   @Column({ length: 50 })
   @MinLength(3)
