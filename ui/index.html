@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Premium E-Commerce Store</title>
-    
+
     <!-- External CSS Libraries -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    
+
     <style>
         :root {
             --primary: #2563eb;
@@ -29,7 +30,7 @@
 
         .navbar {
             background: linear-gradient(135deg, var(--dark) 0%, #334155 100%);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         .navbar-brand {
@@ -60,12 +61,12 @@
             border: none;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         }
 
         .product-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
         }
 
         .product-image {
@@ -106,7 +107,8 @@
             border: 2px solid #e2e8f0;
         }
 
-        .category-pill:hover, .category-pill.active {
+        .category-pill:hover,
+        .category-pill.active {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
@@ -116,7 +118,7 @@
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         }
 
         .star-rating {
@@ -133,14 +135,14 @@
             padding: 15px;
             margin-bottom: 10px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .checkout-summary {
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .notification {
@@ -155,14 +157,16 @@
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .skeleton {
@@ -172,8 +176,13 @@
         }
 
         @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
 
         .order-timeline {
@@ -213,6 +222,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
@@ -231,7 +241,8 @@
                     </li>
                     <li class="nav-item me-3">
                         <div class="input-group" style="width: 250px;">
-                            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Search products...">
+                            <input type="text" class="form-control form-control-sm" id="searchInput"
+                                placeholder="Search products...">
                             <button class="btn btn-light btn-sm" onclick="searchProducts()">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -250,12 +261,23 @@
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="#" onclick="showPage('profile')">Profile</a></li>
                             <li><a class="dropdown-item" href="#" onclick="showPage('orders')">My Orders</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showPage('notifications')">Notifications</a></li>
-                            <li id="sellerMenuItem" style="display: none;"><hr class="dropdown-divider"></li>
-                            <li id="sellerMenuLink" style="display: none;"><a class="dropdown-item" href="#" onclick="showPage('seller')"><i class="fas fa-store me-2"></i>Seller Dashboard</a></li>
-                            <li id="adminMenuItem" style="display: none;"><hr class="dropdown-divider"></li>
-                            <li id="adminMenuLink" style="display: none;"><a class="dropdown-item" href="#" onclick="showPage('admin')"><i class="fas fa-shield-alt me-2"></i>Admin Panel</a></li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="showPage('notifications')">Notifications</a>
+                            </li>
+                            <li id="sellerMenuItem" style="display: none;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="sellerMenuLink" style="display: none;"><a class="dropdown-item" href="#"
+                                    onclick="showPage('seller')"><i class="fas fa-store me-2"></i>Seller Dashboard</a>
+                            </li>
+                            <li id="adminMenuItem" style="display: none;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="adminMenuLink" style="display: none;"><a class="dropdown-item" href="#"
+                                    onclick="showPage('admin')"><i class="fas fa-shield-alt me-2"></i>Admin Panel</a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
                         </ul>
                     </li>
@@ -278,8 +300,10 @@
             <!-- Hero Section -->
             <section class="hero-section">
                 <div class="container text-center" data-aos="fade-up">
-                    <h1 class="display-3 fw-bold mb-4 animate__animated animate__fadeInDown">Welcome to Premium Store</h1>
-                    <p class="lead mb-5 animate__animated animate__fadeInUp">Discover amazing products at unbeatable prices</p>
+                    <h1 class="display-3 fw-bold mb-4 animate__animated animate__fadeInDown">Welcome to Premium Store
+                    </h1>
+                    <p class="lead mb-5 animate__animated animate__fadeInUp">Discover amazing products at unbeatable
+                        prices</p>
                     <button class="btn btn-light btn-lg" onclick="showPage('products')">
                         Shop Now <i class="fas fa-arrow-right ms-2"></i>
                     </button>
@@ -311,7 +335,7 @@
                     <div class="col-lg-3">
                         <div class="filter-section" data-aos="fade-right">
                             <h5 class="mb-3">Filters</h5>
-                            
+
                             <div class="mb-4">
                                 <label class="form-label fw-bold">Categories</label>
                                 <div id="categoryFilters"></div>
@@ -431,7 +455,7 @@
         <div id="sellerPage" style="display: none;">
             <div class="container mt-5">
                 <h2 class="mb-4"><i class="fas fa-store me-2"></i>Seller Dashboard</h2>
-                
+
                 <!-- Seller Stats -->
                 <div class="row mb-4" data-aos="fade-up">
                     <div class="col-md-3">
@@ -545,32 +569,38 @@
                 <!-- Admin Tabs -->
                 <ul class="nav nav-tabs mb-4" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button">
+                        <button class="nav-link active" id="categories-tab" data-bs-toggle="tab"
+                            data-bs-target="#categories" type="button">
                             Categories
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button">
+                        <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products"
+                            type="button">
                             Products
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button">
+                        <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders"
+                            type="button">
                             Orders
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">
+                        <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews"
+                            type="button">
                             Reviews
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="coupons-tab" data-bs-toggle="tab" data-bs-target="#coupons" type="button">
+                        <button class="nav-link" id="coupons-tab" data-bs-toggle="tab" data-bs-target="#coupons"
+                            type="button">
                             Coupons
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button">
+                        <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users"
+                            type="button">
                             Users
                         </button>
                     </li>
@@ -827,7 +857,8 @@
                         <input type="hidden" id="productId">
                         <div class="mb-3">
                             <label class="form-label">Product Name *</label>
-                            <input type="text" class="form-control" id="productName" required minlength="3" maxlength="200">
+                            <input type="text" class="form-control" id="productName" required minlength="3"
+                                maxlength="200">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Description *</label>
@@ -836,7 +867,8 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Price ($) *</label>
-                                <input type="number" class="form-control" id="productPrice" step="0.01" min="0" required>
+                                <input type="number" class="form-control" id="productPrice" step="0.01" min="0"
+                                    required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Stock Quantity *</label>
@@ -863,7 +895,8 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Product Images (URLs, comma-separated)</label>
-                            <textarea class="form-control" id="productImages" rows="2" placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"></textarea>
+                            <textarea class="form-control" id="productImages" rows="2"
+                                placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"></textarea>
                             <small class="text-muted">Enter image URLs separated by commas</small>
                         </div>
                         <button type="submit" class="btn btn-primary">
@@ -918,7 +951,8 @@
                     <form id="couponForm">
                         <div class="mb-3">
                             <label class="form-label">Coupon Code *</label>
-                            <input type="text" class="form-control" id="couponCodeInput" required minlength="4" maxlength="20">
+                            <input type="text" class="form-control" id="couponCodeInput" required minlength="4"
+                                maxlength="20">
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -1002,7 +1036,8 @@
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <h5><i class="fas fa-store me-2"></i>Premium Store</h5>
-                    <p class="text-muted">Your trusted e-commerce platform with premium products and excellent service.</p>
+                    <p class="text-muted">Your trusted e-commerce platform with premium products and excellent service.
+                    </p>
                 </div>
                 <div class="col-md-4 mb-4">
                     <h5>Quick Links</h5>
@@ -1056,7 +1091,7 @@
             checkAuth();
             await loadCategories();
             await loadFeaturedProducts();
-            
+
             // Event Listeners
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
@@ -1076,12 +1111,12 @@
 
         async function fetchUserProfile() {
             try {
-                const response = await fetch(`${API_BASE}/auth/me`, {
+                const response = await fetch(`${API_BASE}/users/me`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
-                
+
                 if (response.ok) {
                     currentUser = await response.json();
                     updateAuthUI();
@@ -1100,13 +1135,13 @@
                 document.getElementById('authButtons').style.display = 'none';
                 document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
                 document.getElementById('profileEmail').textContent = currentUser.email;
-                
+
                 // Show seller menu if user is SELLER or ADMIN
                 if (currentUser.role === 'SELLER' || currentUser.role === 'ADMIN') {
                     document.getElementById('sellerMenuItem').style.display = 'block';
                     document.getElementById('sellerMenuLink').style.display = 'block';
                 }
-                
+
                 // Show admin menu if user is ADMIN
                 if (currentUser.role === 'ADMIN') {
                     document.getElementById('adminMenuItem').style.display = 'block';
@@ -1138,7 +1173,11 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    localStorage.setItem('token', data.accessToken);
+                    // Backend returns tokens under `tokens`: { accessToken, refreshToken }
+                    const access = data?.tokens?.accessToken || data?.accessToken;
+                    const refresh = data?.tokens?.refreshToken || data?.refreshToken;
+                    if (access) localStorage.setItem('token', access);
+                    if (refresh) localStorage.setItem('refreshToken', refresh);
                     bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
                     await fetchUserProfile();
                     showNotification('Login successful!', 'success');
@@ -1197,9 +1236,9 @@
             try {
                 const response = await fetch(`${API_BASE}/categories`);
                 const categories = await response.json();
-                
+
                 // Home page categories
-                const homeHTML = categories.map(cat => 
+                const homeHTML = categories.map(cat =>
                     `<span class="category-pill" onclick="filterByCategory('${cat.id}')">${cat.name}</span>`
                 ).join('');
                 document.getElementById('categoriesHome').innerHTML = homeHTML;
@@ -1223,7 +1262,7 @@
                 const response = await fetch(`${API_BASE}/products?limit=8&status=PUBLISHED`);
                 const data = await response.json();
                 const products = data.data || data;
-                
+
                 const html = products.map(product => createProductCard(product)).join('');
                 document.getElementById('featuredProducts').innerHTML = html;
             } catch (error) {
@@ -1242,18 +1281,18 @@
             try {
                 const response = await fetch(`${API_BASE}/products?${params}`);
                 const data = await response.json();
-                
+
                 const products = data.data || data;
                 const total = data.total || products.length;
-                
+
                 const html = products.map(product => createProductCard(product)).join('');
                 document.getElementById('productsList').innerHTML = html;
                 document.getElementById('productsCount').textContent = `${total} Products`;
-                
+
                 createPagination(page, Math.ceil(total / 12));
             } catch (error) {
                 console.error('Error loading products:', error);
-                document.getElementById('productsList').innerHTML = 
+                document.getElementById('productsList').innerHTML =
                     '<div class="col-12 text-center py-5"><p>Error loading products</p></div>';
             }
         }
@@ -1261,7 +1300,7 @@
         function createProductCard(product) {
             const imageUrl = product.images?.[0] || 'https://via.placeholder.com/300x250?text=No+Image';
             const rating = product.averageRating || 0;
-            
+
             return `
                 <div class="col-md-4" data-aos="fade-up">
                     <div class="card product-card h-100">
@@ -1278,12 +1317,12 @@
                                         <small class="text-muted ms-1">(${product.reviewCount || 0})</small>
                                     </div>
                                 </div>
-                                ${product.stockQuantity > 0 ? 
-                                    `<button class="btn btn-primary w-100" onclick="addToCart('${product.id}')">
+                                ${product.stockQuantity > 0 ?
+                    `<button class="btn btn-primary w-100" onclick="addToCart('${product.id}')">
                                         <i class="fas fa-cart-plus me-2"></i>Add to Cart
                                     </button>` :
-                                    `<button class="btn btn-secondary w-100" disabled>Out of Stock</button>`
-                                }
+                    `<button class="btn btn-secondary w-100" disabled>Out of Stock</button>`
+                }
                                 <button class="btn btn-outline-primary w-100 mt-2" onclick="showProductDetail('${product.id}')">
                                     View Details
                                 </button>
@@ -1298,12 +1337,12 @@
             try {
                 const response = await fetch(`${API_BASE}/products/${productId}`);
                 const product = await response.json();
-                
+
                 const reviewsResponse = await fetch(`${API_BASE}/reviews/product/${productId}?limit=5`);
                 const reviews = await reviewsResponse.json();
-                
+
                 const imageUrl = product.images?.[0] || 'https://via.placeholder.com/400?text=No+Image';
-                
+
                 document.getElementById('productModalTitle').textContent = product.name;
                 document.getElementById('productModalBody').innerHTML = `
                     <div class="row">
@@ -1322,12 +1361,12 @@
                             <p class="${product.stockQuantity > 0 ? 'text-success' : 'text-danger'}">
                                 ${product.stockQuantity > 0 ? `${product.stockQuantity} in stock` : 'Out of stock'}
                             </p>
-                            ${product.stockQuantity > 0 ? 
-                                `<button class="btn btn-primary btn-lg w-100" onclick="addToCart('${product.id}'); bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();">
+                            ${product.stockQuantity > 0 ?
+                        `<button class="btn btn-primary btn-lg w-100" onclick="addToCart('${product.id}'); bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();">
                                     <i class="fas fa-cart-plus me-2"></i>Add to Cart
                                 </button>` :
-                                `<button class="btn btn-secondary btn-lg w-100" disabled>Out of Stock</button>`
-                            }
+                        `<button class="btn btn-secondary btn-lg w-100" disabled>Out of Stock</button>`
+                    }
                         </div>
                     </div>
                     <hr class="my-4">
@@ -1345,7 +1384,7 @@
                         `).join('') : '<p class="text-muted">No reviews yet</p>'}
                     </div>
                 `;
-                
+
                 new bootstrap.Modal(document.getElementById('productModal')).show();
             } catch (error) {
                 console.error('Error loading product:', error);
@@ -1363,7 +1402,7 @@
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
-                
+
                 if (response.ok) {
                     cart = await response.json();
                     updateCartCount(cart.items?.length || 0);
@@ -1479,7 +1518,7 @@
 
         function displayCart() {
             if (!cart || !cart.items?.length) {
-                document.getElementById('cartItems').innerHTML = 
+                document.getElementById('cartItems').innerHTML =
                     '<p class="text-center text-muted py-5">Your cart is empty</p>';
                 document.getElementById('cartSummary').innerHTML = '';
                 return;
@@ -1592,7 +1631,7 @@
 
         function displayOrders(orders) {
             if (!orders?.length) {
-                document.getElementById('ordersList').innerHTML = 
+                document.getElementById('ordersList').innerHTML =
                     '<div class="text-center py-5"><p class="text-muted">No orders yet</p></div>';
                 return;
             }
@@ -1652,7 +1691,7 @@
 
         function displayNotifications(notifications) {
             if (!notifications?.length) {
-                document.getElementById('notificationsList').innerHTML = 
+                document.getElementById('notificationsList').innerHTML =
                     '<div class="text-center py-5"><p class="text-muted">No notifications</p></div>';
                 return;
             }
@@ -1666,11 +1705,11 @@
                                 <p class="mb-1">${notif.message}</p>
                                 <small class="text-muted">${new Date(notif.createdAt).toLocaleString()}</small>
                             </div>
-                            ${!notif.isRead ? 
-                                `<button class="btn btn-sm btn-primary" onclick="markNotificationRead('${notif.id}')">
+                            ${!notif.isRead ?
+                    `<button class="btn btn-sm btn-primary" onclick="markNotificationRead('${notif.id}')">
                                     Mark Read
                                 </button>` : ''
-                            }
+                }
                         </div>
                     </div>
                 </div>
@@ -1711,7 +1750,7 @@
         // Profile
         async function handleUpdateProfile(e) {
             e.preventDefault();
-            
+
             const data = {
                 firstName: document.getElementById('profileFirstName').value,
                 lastName: document.getElementById('profileLastName').value
@@ -1756,7 +1795,7 @@
 
         function applyFilters() {
             const filters = {};
-            
+
             const categories = Array.from(document.querySelectorAll('#categoryFilters input:checked'))
                 .map(cb => cb.value);
             if (categories.length > 0) filters.categoryId = categories[0];
@@ -1789,8 +1828,8 @@
         // Navigation
         function showPage(page) {
             document.querySelectorAll('#mainContent > div').forEach(div => div.style.display = 'none');
-            
-            switch(page) {
+
+            switch (page) {
                 case 'home':
                     document.getElementById('homePage').style.display = 'block';
                     break;
@@ -1841,7 +1880,7 @@
                     loadAdminDashboard();
                     break;
             }
-            
+
             window.scrollTo(0, 0);
         }
 
@@ -1867,9 +1906,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             notification.id = `notif-${id}`;
-            
+
             document.getElementById('notificationContainer').appendChild(notification);
-            
+
             setTimeout(() => {
                 notification.classList.remove('animate__fadeInRight');
                 notification.classList.add('animate__fadeOutRight');
@@ -1891,10 +1930,10 @@
             const fullStars = Math.floor(rating);
             const halfStar = rating % 1 >= 0.5;
             const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-            
-            return '★'.repeat(fullStars) + 
-                   (halfStar ? '½' : '') + 
-                   '☆'.repeat(emptyStars);
+
+            return '★'.repeat(fullStars) +
+                (halfStar ? '½' : '') +
+                '☆'.repeat(emptyStars);
         }
 
         function truncate(str, len) {
@@ -1908,11 +1947,11 @@
             }
 
             let html = '<nav><ul class="pagination">';
-            
+
             if (currentPage > 1) {
                 html += `<li class="page-item"><a class="page-link" href="#" onclick="loadProducts(${currentPage - 1}, currentFilters)">Previous</a></li>`;
             }
-            
+
             for (let i = 1; i <= totalPages; i++) {
                 if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
                     html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
@@ -1922,11 +1961,11 @@
                     html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
                 }
             }
-            
+
             if (currentPage < totalPages) {
                 html += `<li class="page-item"><a class="page-link" href="#" onclick="loadProducts(${currentPage + 1}, currentFilters)">Next</a></li>`;
             }
-            
+
             html += '</ul></nav>';
             document.getElementById('pagination').innerHTML = html;
         }
@@ -1985,7 +2024,7 @@
 
         function displaySellerProducts(products) {
             if (!products?.length) {
-                document.getElementById('sellerProductsList').innerHTML = 
+                document.getElementById('sellerProductsList').innerHTML =
                     '<tr><td colspan="6" class="text-center text-muted">No products yet</td></tr>';
                 return;
             }
@@ -2018,11 +2057,11 @@
             try {
                 const response = await fetch(`${API_BASE}/categories`);
                 const categories = await response.json();
-                
-                const options = categories.map(cat => 
+
+                const options = categories.map(cat =>
                     `<option value="${cat.id}">${cat.name}</option>`
                 ).join('');
-                
+
                 document.getElementById('productCategory').innerHTML = options;
             } catch (error) {
                 console.error('Error loading categories:', error);
@@ -2041,7 +2080,7 @@
                 const response = await fetch(`${API_BASE}/products/${productId}`);
                 if (response.ok) {
                     const product = await response.json();
-                    
+
                     document.getElementById('productFormTitle').textContent = 'Edit Product';
                     document.getElementById('productId').value = product.id;
                     document.getElementById('productName').value = product.name;
@@ -2052,7 +2091,7 @@
                     document.getElementById('productCategory').value = product.categoryId;
                     document.getElementById('productStatus').value = product.status;
                     document.getElementById('productImages').value = product.images?.join(', ') || '';
-                    
+
                     new bootstrap.Modal(document.getElementById('productFormModal')).show();
                 }
             } catch (error) {
@@ -2062,13 +2101,13 @@
 
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const productId = document.getElementById('productId').value;
             const images = document.getElementById('productImages').value
                 .split(',')
                 .map(url => url.trim())
                 .filter(url => url);
-            
+
             const data = {
                 name: document.getElementById('productName').value,
                 description: document.getElementById('productDescription').value,
@@ -2083,8 +2122,8 @@
             showLoading('productFormBtnText', 'productFormSpinner');
 
             try {
-                const url = productId ? 
-                    `${API_BASE}/seller/products/${productId}` : 
+                const url = productId ?
+                    `${API_BASE}/seller/products/${productId}` :
                     `${API_BASE}/seller/products`;
                 const method = productId ? 'PUT' : 'POST';
 
@@ -2174,7 +2213,7 @@
             try {
                 const response = await fetch(`${API_BASE}/categories`);
                 const categories = await response.json();
-                
+
                 const html = categories.map(cat => `
                     <tr>
                         <td>${cat.name}</td>
@@ -2187,8 +2226,8 @@
                         </td>
                     </tr>
                 `).join('');
-                
-                document.getElementById('adminCategoriesList').innerHTML = html || 
+
+                document.getElementById('adminCategoriesList').innerHTML = html ||
                     '<tr><td colspan="4" class="text-center text-muted">No categories</td></tr>';
             } catch (error) {
                 console.error('Error loading categories:', error);
@@ -2202,7 +2241,7 @@
 
         document.getElementById('categoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const data = {
                 name: document.getElementById('categoryName').value,
                 slug: document.getElementById('categorySlug').value,
@@ -2266,7 +2305,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     const products = data.data || data;
-                    
+
                     const html = products.map(product => `
                         <tr>
                             <td>
@@ -2285,8 +2324,8 @@
                             </td>
                         </tr>
                     `).join('');
-                    
-                    document.getElementById('adminProductsList').innerHTML = html || 
+
+                    document.getElementById('adminProductsList').innerHTML = html ||
                         '<tr><td colspan="7" class="text-center text-muted">No products</td></tr>';
                 }
             } catch (error) {
@@ -2336,7 +2375,7 @@
 
         function displayAdminOrders(orders) {
             if (!orders?.length) {
-                document.getElementById('adminOrdersList').innerHTML = 
+                document.getElementById('adminOrdersList').innerHTML =
                     '<p class="text-center text-muted">No orders</p>';
                 return;
             }
@@ -2378,7 +2417,7 @@
 
         document.getElementById('orderStatusForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const orderId = document.getElementById('orderStatusId').value;
             const data = {
                 status: document.getElementById('orderStatus').value,
@@ -2419,9 +2458,9 @@
                 if (response.ok) {
                     const data = await response.json();
                     const reviews = data.data || data;
-                    
+
                     if (!reviews?.length) {
-                        document.getElementById('adminReviewsList').innerHTML = 
+                        document.getElementById('adminReviewsList').innerHTML =
                             '<p class="text-center text-muted">No pending reviews</p>';
                         return;
                     }
@@ -2509,7 +2548,7 @@
 
         document.getElementById('couponForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const data = {
                 code: document.getElementById('couponCodeInput').value.toUpperCase(),
                 discountValue: parseFloat(document.getElementById('couponValue').value),
@@ -2554,11 +2593,11 @@
 
                 if (response.ok) {
                     const coupons = await response.json();
-                    
+
                     const html = (coupons.data || coupons).map(coupon => {
                         const isExpired = new Date(coupon.expiresAt) < new Date();
                         const isMaxed = coupon.usedCount >= coupon.maxUses;
-                        
+
                         return `
                             <tr>
                                 <td><strong>${coupon.code}</strong></td>
@@ -2579,8 +2618,8 @@
                             </tr>
                         `;
                     }).join('');
-                    
-                    document.getElementById('adminCouponsList').innerHTML = html || 
+
+                    document.getElementById('adminCouponsList').innerHTML = html ||
                         '<tr><td colspan="7" class="text-center text-muted">No coupons</td></tr>';
                 }
             } catch (error) {
@@ -2620,7 +2659,7 @@
 
                 if (response.ok) {
                     const users = await response.json();
-                    
+
                     const html = (users.data || users).map(user => `
                         <tr>
                             <td>${user.firstName} ${user.lastName}</td>
@@ -2636,8 +2675,8 @@
                             </td>
                         </tr>
                     `).join('');
-                    
-                    document.getElementById('adminUsersList').innerHTML = html || 
+
+                    document.getElementById('adminUsersList').innerHTML = html ||
                         '<tr><td colspan="5" class="text-center text-muted">No users</td></tr>';
                 }
             } catch (error) {
@@ -2670,4 +2709,5 @@
         }
     </script>
 </body>
+
 </html>
