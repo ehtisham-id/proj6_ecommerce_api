@@ -1,5 +1,18 @@
 // API Base URL & Auth
-window.API_BASE = '/api/v1';
+// If `window.API_BASE` is pre-set (for example by the backend-served UI), keep it.
+// When the static UI is served via Live Server (port 5500) we need to point
+// API calls to the backend running on localhost:3000 so requests don't hit the
+// static server (which only serves GET/HEAD/OPTIONS and returns 405 for POST).
+window.API_BASE = (function () {
+  if (window.API_BASE) return window.API_BASE;
+  try {
+    const port = location.port;
+    if (port === '5500' || port === '5501') return 'http://localhost:3000/api/v1';
+  } catch (e) {
+    // ignore
+  }
+  return '/api/v1';
+})();
 
 const apiCall = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token') || null;

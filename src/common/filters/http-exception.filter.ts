@@ -12,6 +12,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();
+    // Log the exception for debugging (includes stack for unexpected errors)
+    try {
+      if (exception instanceof Error) {
+        // Prefer structured error logging in prod; console for local debugging
+        console.error(
+          'Unhandled exception:',
+          exception.stack || exception.message,
+        );
+      } else {
+        console.error('Unhandled exception (non-error):', exception);
+      }
+    } catch (logErr) {
+      // ignore logging failures
+    }
 
     const status =
       exception instanceof HttpException

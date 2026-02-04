@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   ConflictException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
@@ -41,11 +42,16 @@ export class AuthService {
     const accessToken = this.generateAccessToken(savedUser);
     const refreshToken = this.generateRefreshToken(savedUser.id);
 
-    await this.redisService.set(
-      `${this.refreshTokenPrefix}${refreshToken}`,
-      savedUser.id,
-      { EX: this.getRefreshTokenExpiry() },
-    );
+    try {
+      await this.redisService.set(
+        `${this.refreshTokenPrefix}${refreshToken}`,
+        savedUser.id,
+        { EX: this.getRefreshTokenExpiry() },
+      );
+    } catch (e) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.error('Failed to store refresh token in Redis:', errMsg);
+    }
 
     return {
       user: this.sanitizeUser(savedUser),
@@ -58,18 +64,41 @@ export class AuthService {
       where: { email: dto.email, isActive: true, deletedAt: IsNull() },
     });
 
-    if (!user || !(await bcrypt.compare(dto.password, user.password))) {
+    try {
+      const match = user && (await bcrypt.compare(dto.password, user.password));
+      if (!user || !match) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error('Error comparing passwords in login:', errMsg);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const accessToken = this.generateAccessToken(user);
     const refreshToken = this.generateRefreshToken(user.id);
 
-    await this.redisService.set(
-      `${this.refreshTokenPrefix}${refreshToken}`,
-      user.id,
-      { EX: this.getRefreshTokenExpiry() },
-    );
+    // Log tokens (redact in production) to help debugging when UI reports none.
+    try {
+      console.debug('Generated tokens for user:', {
+        userId: user.id,
+        accessTokenExists: !!accessToken,
+        refreshTokenExists: !!refreshToken,
+      });
+    } catch (e) {
+      // ignore logging errors
+    }
+
+    try {
+      await this.redisService.set(
+        `${this.refreshTokenPrefix}${refreshToken}`,
+        user.id,
+        { EX: this.getRefreshTokenExpiry() },
+      );
+    } catch (e) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.error('Failed to store refresh token in Redis:', errMsg);
+    }
 
     return {
       user: this.sanitizeUser(user),
@@ -88,7 +117,12 @@ export class AuthService {
     });
     if (!user) throw new BadRequestException('User not found');
 
-    await this.redisService.del(`${this.refreshTokenPrefix}${refreshToken}`);
+    try {
+      await this.redisService.del(`${this.refreshTokenPrefix}${refreshToken}`);
+    } catch (e) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.error('Failed to delete refresh token from Redis:', errMsg);
+    }
 
     const newAccessToken = this.generateAccessToken(user);
     const newRefreshToken = this.generateRefreshToken(user.id);
@@ -111,21 +145,35 @@ export class AuthService {
   }
 
   private generateAccessToken(user: User): string {
-    return this.jwtService.sign({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    try {
+      return this.jwtService.sign({
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+      });
+    } catch (e) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.error('Failed to generate access token:', errMsg);
+      throw new InternalServerErrorException('Failed to generate access token');
+    }
   }
 
   private generateRefreshToken(userId: string): string {
-    return this.jwtService.sign(
-      { sub: userId },
-      {
-        secret: this.configService.get('JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN'),
-      },
-    );
+    try {
+      return this.jwtService.sign(
+        { sub: userId },
+        {
+          secret: this.configService.get('JWT_REFRESH_SECRET'),
+          expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN'),
+        },
+      );
+    } catch (e) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.error('Failed to generate refresh token:', errMsg);
+      throw new InternalServerErrorException(
+        'Failed to generate refresh token',
+      );
+    }
   }
 
   private getRefreshTokenExpiry(): number {
