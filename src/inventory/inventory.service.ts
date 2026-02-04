@@ -137,12 +137,38 @@ export class InventoryService {
       const inventoryRepo = manager.getRepository(Inventory);
       const transactionRepo = manager.getRepository(InventoryTransaction);
 
-      const inventory = await inventoryRepo.findOne({
+      let inventory = await inventoryRepo.findOne({
         where: { productId },
         lock: { mode: 'pessimistic_write' },
       });
 
-      if (!inventory || inventory.availableQuantity < quantity) {
+      // If inventory record doesn't exist, create it from product.stockQuantity
+      if (!inventory) {
+        const product = await manager.getRepository(Product).findOne({
+          where: { id: productId },
+        });
+
+        if (!product) {
+          throw new NotFoundException('Product not found');
+        }
+
+        inventory = inventoryRepo.create({
+          productId,
+          product,
+          availableQuantity: Math.max(0, Number(product.stockQuantity) || 0),
+          reservedQuantity: 0,
+          committedQuantity: 0,
+        });
+
+        await inventoryRepo.save(inventory);
+        // re-load with lock
+        inventory = await inventoryRepo.findOne({
+          where: { productId },
+          lock: { mode: 'pessimistic_write' },
+        });
+      }
+
+      if (inventory.availableQuantity < quantity) {
         throw new BadRequestException('Insufficient inventory');
       }
 
@@ -217,6 +243,11 @@ export class InventoryService {
     orderId?: string,
     userId?: string,
   ): Promise<Inventory> {
-    return this.reserveInventory(productId, quantity, orderId ?? ' ', userId?? ' ');
+    return this.reserveInventory(
+      productId,
+      quantity,
+      orderId ?? ' ',
+      userId ?? ' ',
+    );
   }
 }

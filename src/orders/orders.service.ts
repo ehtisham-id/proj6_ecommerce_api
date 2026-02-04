@@ -39,26 +39,35 @@ export class OrdersService {
     return this.dataSource.transaction(async (manager) => {
       const cart = await this.cartService.getCart(userId);
 
-      if (!cart.items.length) {
+      // Use DTO items if provided and non-empty, otherwise fall back to server cart
+      const useDtoItems =
+        dto && Array.isArray(dto.items) && dto.items.length > 0;
+
+      if (!useDtoItems && !cart.items.length) {
         throw new ConflictException('Cart is empty');
       }
 
       let totalAmount = 0;
       const orderItems: OrderItem[] = [];
 
-      for (const cartItem of cart.items) {
-        const product = await this.productsService.findOne(cartItem.productId);
+      const sourceItems = useDtoItems ? dto.items : cart.items;
+
+      for (const srcItem of sourceItems) {
+        const product = await this.productsService.findOne(srcItem.productId);
 
         // reserve inventory
-        await this.inventoryService.reserve(product.id, cartItem.quantity);
+        await this.inventoryService.reserve(product.id, srcItem.quantity);
 
-        totalAmount += cartItem.quantity * cartItem.priceAtAdd;
+        // If item came from cart it may have a saved `priceAtAdd`, otherwise use current product price
+        const priceToUse = (srcItem as any).priceAtAdd ?? product.price;
+
+        totalAmount += srcItem.quantity * priceToUse;
 
         orderItems.push(
           this.orderItemRepository.create({
             productId: product.id,
-            quantity: cartItem.quantity,
-            price: cartItem.priceAtAdd,
+            quantity: srcItem.quantity,
+            price: priceToUse,
           }),
         );
       }

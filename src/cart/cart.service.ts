@@ -189,15 +189,23 @@ export class CartService {
     items: CartItem[],
     totals: { quantity: number; amount: number },
   ): Promise<void> {
-    await this.cartRepository.upsert(
-      {
+    // Use find + save to avoid relying on an ON CONFLICT unique constraint
+    const existing = await this.cartRepository.findOne({ where: { userId } });
+    if (existing) {
+      existing.items = items;
+      existing.totalQuantity = totals.quantity;
+      existing.totalAmount = totals.amount;
+      existing.isActive = true;
+      await this.cartRepository.save(existing);
+    } else {
+      const cart = this.cartRepository.create({
         userId,
         items,
         totalQuantity: totals.quantity,
         totalAmount: totals.amount,
         isActive: true,
-      },
-      ['userId'],
-    );
+      });
+      await this.cartRepository.save(cart);
+    }
   }
 }
