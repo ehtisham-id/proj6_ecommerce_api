@@ -168,6 +168,10 @@ export class InventoryService {
         });
       }
 
+      if (!inventory) {
+        throw new NotFoundException('Inventory not found');
+      }
+
       if (inventory.availableQuantity < quantity) {
         throw new BadRequestException('Insufficient inventory');
       }

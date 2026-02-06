@@ -2277,19 +2277,24 @@
 
         async function loadAdminStats() {
             try {
-                const response = await fetch(`${API_BASE}/admin/stats`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+                const response = await apiFetch(`${API_BASE}/admin/stats`);
 
-                if (response.ok) {
-                    const stats = await response.json();
-                    document.getElementById('adminTotalUsers').textContent = stats.totalUsers || 0;
-                    document.getElementById('adminTotalRevenue').textContent = `$${(stats.totalRevenue || 0).toFixed(2)}`;
-                    document.getElementById('adminTotalOrders').textContent = stats.totalOrders || 0;
-                    document.getElementById('adminTotalProducts').textContent = stats.totalProducts || 0;
+                if (!response.ok) {
+                    const errorText = await response.text().catch(() => '');
+                    console.error('Failed to load admin stats:', response.status, errorText);
+                    return;
                 }
+
+                const stats = await response.json();
+                const totalUsers = Number(stats?.totalUsers ?? 0);
+                const totalRevenue = Number(stats?.totalRevenue ?? 0);
+                const totalOrders = Number(stats?.totalOrders ?? 0);
+                const totalProducts = Number(stats?.totalProducts ?? 0);
+
+                document.getElementById('adminTotalUsers').textContent = totalUsers;
+                document.getElementById('adminTotalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
+                document.getElementById('adminTotalOrders').textContent = totalOrders;
+                document.getElementById('adminTotalProducts').textContent = totalProducts;
             } catch (error) {
                 console.error('Error loading admin stats:', error);
             }
